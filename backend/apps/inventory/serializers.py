@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.db import transaction
 from .models import (
+    Category,
     Store,
     Product,
     Variant,
@@ -13,6 +14,27 @@ from .models import (
 )
 
 
+class CategorySerializer(serializers.ModelSerializer):
+    product_count = serializers.IntegerField(source='products.count', read_only=True)
+
+    class Meta:
+        model = Category
+        fields = [
+            'id',
+            'name',
+            'code',
+            'description',
+            'is_active',
+            'product_count',
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+        extra_kwargs = {
+            'code': {'required': False},
+        }
+
+
 class StoreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Store
@@ -22,6 +44,7 @@ class StoreSerializer(serializers.ModelSerializer):
             'code',
             'address',
             'phone',
+            'is_warehouse',
             'is_active',
             'created_at',
             'updated_at',
@@ -49,10 +72,17 @@ class VariantSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
         ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+        extra_kwargs = {
+            'sku': {'required': False},
+            'barcode': {'required': False},
+        }
 
 
 class ProductSerializer(serializers.ModelSerializer):
     variants = VariantSerializer(many=True, read_only=True)
+    category_name = serializers.CharField(source='category.name', read_only=True, default=None)
+    category_code = serializers.CharField(source='category.code', read_only=True, default=None)
 
     class Meta:
         model = Product
@@ -62,21 +92,28 @@ class ProductSerializer(serializers.ModelSerializer):
             'style_code',
             'description',
             'category',
+            'category_name',
+            'category_code',
             'is_active',
             'variants',
             'created_at',
             'updated_at',
         ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+        extra_kwargs = {
+            'style_code': {'required': False},
+        }
 
 
 class StoreInventorySerializer(serializers.ModelSerializer):
-    store_name = serializers.CharField(source='store.name', read_only=True)
-    store_code = serializers.CharField(source='store.code', read_only=True)
+    store_name = serializers.CharField(source='store.name', read_only=True, default='Central Storage (Warehouse)')
+    store_code = serializers.CharField(source='store.code', read_only=True, default='STORAGE')
     variant_sku = serializers.CharField(source='variant.sku', read_only=True)
     variant_barcode = serializers.CharField(source='variant.barcode', read_only=True)
     variant_size = serializers.CharField(source='variant.size', read_only=True)
     variant_color = serializers.CharField(source='variant.color', read_only=True)
     product_name = serializers.CharField(source='variant.product.name', read_only=True)
+    is_storage = serializers.SerializerMethodField()
 
     class Meta:
         model = StoreInventory
@@ -85,6 +122,7 @@ class StoreInventorySerializer(serializers.ModelSerializer):
             'store',
             'store_name',
             'store_code',
+            'is_storage',
             'variant',
             'variant_sku',
             'variant_barcode',
@@ -95,6 +133,34 @@ class StoreInventorySerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
         ]
+
+    def get_is_storage(self, obj):
+        return obj.store is None or bool(obj.store.is_warehouse)
+
+
+class TransferInventorySerializer(serializers.Serializer):
+    variant_id = serializers.CharField(help_text="Variant UUID, SKU, or Barcode")
+    from_store = serializers.CharField(required=False, allow_null=True, allow_blank=True, default=None, help_text="Source store ID/code or null/storage for warehouse")
+    to_store = serializers.CharField(required=False, allow_null=True, allow_blank=True, default=None, help_text="Target store ID/code or null/storage for warehouse")
+    quantity = serializers.IntegerField(min_value=1, help_text="Quantity of units to transfer")
+    notes = serializers.CharField(required=False, allow_blank=True, default='')
+
+
+class AdjustInventorySerializer(serializers.Serializer):
+    variant_id = serializers.CharField(help_text="Variant UUID, SKU, or Barcode")
+    store = serializers.CharField(required=False, allow_null=True, allow_blank=True, default=None, help_text="Store ID/code or null/storage for central warehouse")
+    type = serializers.ChoiceField(choices=['add', 'subtract', 'set'], default='add', help_text="'add' increments stock, 'subtract' decrements stock, 'set' overrides absolute stock")
+    quantity = serializers.IntegerField(min_value=0, help_text="Units to add/subtract, or absolute target level when type is 'set'")
+    reason = serializers.ChoiceField(
+        choices=[
+            ('STOCK_ADJUSTMENT', 'Stock Adjustment'),
+            ('RETURN', 'Customer Return'),
+            ('STOCKTAKE_RECONCILIATION', 'Stocktake Reconciliation'),
+            ('WAREHOUSE_TRANSFER', 'Warehouse Transfer'),
+        ],
+        default='STOCK_ADJUSTMENT'
+    )
+    notes = serializers.CharField(required=False, allow_blank=True, default='')
 
 
 class ServerEventSerializer(serializers.ModelSerializer):

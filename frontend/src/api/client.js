@@ -31,6 +31,16 @@ export async function apiClient(endpoint, options = {}) {
     defaultHeaders['Authorization'] = `Token ${token}`;
   }
 
+  // Automatically attach active store scope to every API request via X-Store-ID header
+  try {
+    const activeStore = localStorage.getItem('clothstock_active_store');
+    if (activeStore && activeStore !== 'all') {
+      defaultHeaders['X-Store-ID'] = activeStore;
+    }
+  } catch {
+    // ignore localStorage unavailability
+  }
+
   const config = {
     method: body ? 'POST' : 'GET',
     headers: {

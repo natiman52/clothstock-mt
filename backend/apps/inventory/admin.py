@@ -7,6 +7,9 @@ from .models import (
     ServerEvent,
     SyncEvent,
     StockLedgerEntry,
+    Category,
+    Sale,
+    SaleItem
 )
 
 
@@ -49,7 +52,9 @@ class StoreInventoryAdmin(admin.ModelAdmin):
     @admin.display(description='Product', ordering='variant__product__name')
     def get_product(self, obj):
         return obj.variant.product.name
-
+@admin.register(Category)
+class CatagoryAdmin(admin.ModelAdmin):
+    list_display=("name",)
 
 @admin.register(ServerEvent)
 class ServerEventAdmin(admin.ModelAdmin):
@@ -96,3 +101,11 @@ class StockLedgerEntryAdmin(admin.ModelAdmin):
     @admin.display(description='SKU', ordering='variant__sku')
     def get_sku(self, obj):
         return obj.variant.sku
+
+@admin.register(Sale)
+class SaleAdmin(admin.ModelAdmin):
+    list_display=("sold_at",)
+
+@admin.register(SaleItem)
+class SaleItemAdmin(admin.ModelAdmin):
+    list_display = ("sale",)

@@ -6,6 +6,7 @@ python <<'PY'
 import os, sys, time
 import MySQLdb
 
+
 # ── 1. Wait for MySQL ──────────────────────────────────────────────────────────
 host     = os.environ.get("DB_HOST", "db")
 port     = int(os.environ.get("MYSQL_PORT", "3306"))
@@ -37,6 +38,30 @@ if [ "$RUN_MIGRATIONS" = "true" ]; then
     python manage.py migrate --noinput
     echo "Collecting static assets..."
     python manage.py collectstatic --noinput
+
+    echo "Creating or updating default admin superuser (admin/admin)..."
+    python manage.py shell <<'PY'
+from django.contrib.auth import get_user_model
+User = get_user_model()
+username = 'admin'
+password = 'admin'
+
+if not User.objects.filter(username=username).exists():
+    user = User.objects.create_superuser(username=username,  password=password)
+    if hasattr(user, 'status') and hasattr(User, 'Status'):
+        user.status = User.Status.OWNER
+        user.save()
+    print("Default superuser 'admin' created successfully.")
+else:
+    user = User.objects.get(username=username)
+    user.set_password(password)
+    user.is_superuser = True
+    user.is_staff = True
+    if hasattr(user, 'status') and hasattr(User, 'Status'):
+        user.status = User.Status.OWNER
+    user.save()
+    print("Default superuser 'admin' credentials refreshed.")
+PY
 fi
 
 exec "$@"

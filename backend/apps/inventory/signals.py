@@ -7,6 +7,7 @@ from django.dispatch import receiver
 from django.utils import timezone
 
 from .models import (
+    Category,
     Product,
     Variant,
     Store,
@@ -68,6 +69,41 @@ def log_server_event(event_type, store=None, payload=None):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Category Signals (Global Catalog Changes)
+# ─────────────────────────────────────────────────────────────────────────────
+
+@receiver(post_save, sender=Category)
+def category_saved_handler(sender, instance, created, **kwargs):
+    if _server_events_suppressed() or getattr(instance, '_skip_server_event', False):
+        return
+
+    event_type = 'CATEGORY_CREATED' if created else 'CATEGORY_UPDATED'
+    payload = {
+        'id': instance.id,
+        'name': instance.name,
+        'code': instance.code,
+        'description': instance.description,
+        'is_active': instance.is_active,
+        'created_at': instance.created_at.isoformat() if instance.created_at else None,
+        'updated_at': instance.updated_at.isoformat() if instance.updated_at else timezone.now().isoformat(),
+    }
+    log_server_event(event_type, store=None, payload=payload)
+
+
+@receiver(post_delete, sender=Category)
+def category_deleted_handler(sender, instance, **kwargs):
+    if _server_events_suppressed() or getattr(instance, '_skip_server_event', False):
+        return
+
+    payload = {
+        'id': instance.id,
+        'name': instance.name,
+        'code': instance.code,
+    }
+    log_server_event('CATEGORY_DELETED', store=None, payload=payload)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Product Signals (Global Catalog Changes)
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -82,7 +118,9 @@ def product_saved_handler(sender, instance, created, **kwargs):
         'name': instance.name,
         'style_code': instance.style_code,
         'description': instance.description,
-        'category': instance.category,
+        'category_id': instance.category_id,
+        'category': instance.category.name if instance.category else None,
+        'category_code': instance.category.code if instance.category else None,
         'is_active': instance.is_active,
         'created_at': instance.created_at.isoformat() if instance.created_at else None,
         'updated_at': instance.updated_at.isoformat() if instance.updated_at else timezone.now().isoformat(),
@@ -193,7 +231,7 @@ def store_inventory_saved_handler(sender, instance, created, **kwargs):
     event_type = 'STOCK_TRANSFER' if created else 'INVENTORY_UPDATED'
     payload = {
         'store_id': instance.store_id,
-        'store_code': instance.store.code,
+        'store_code': instance.store.code if instance.store else 'STORAGE',
         'variant_id': str(instance.variant_id),
         'variant_sku': instance.variant.sku,
         'quantity_on_hand': instance.quantity_on_hand,
@@ -216,7 +254,7 @@ def stock_ledger_saved_handler(sender, instance, created, **kwargs):
         payload = {
             'ledger_id': instance.id,
             'store_id': instance.store_id,
-            'store_code': instance.store.code,
+            'store_code': instance.store.code if instance.store else 'STORAGE',
             'variant_id': str(instance.variant_id),
             'variant_sku': instance.variant.sku,
             'delta': instance.delta,
@@ -292,6 +330,43 @@ def sale_deleted_handler(sender, instance, **kwargs):
         'store_code': instance.store.code,
     }
     log_server_event('SALE_DELETED', store=instance.store, payload=payload)
+
+
+@receiver(post_save, sender=SaleItem)
+def sale_item_saved_handler(sender, instance, created, **kwargs):
+    """
+    Whenever a SaleItem is created, automatically decrement store inventory
+    and write an authoritative StockLedgerEntry row with exact unit_price and unit_cost snapshot.
+    """
+    if not created or instance.ledger_entry_id or _server_events_suppressed():
+        return
+
+    store = instance.sale.store
+    variant = instance.variant
+
+    inv, _ = StoreInventory.objects.get_or_create(
+        store=store,
+        variant=variant,
+        defaults={'quantity_on_hand': 0}
+    )
+    inv.quantity_on_hand -= instance.quantity
+    inv._skip_server_event = True
+    inv.save(update_fields=['quantity_on_hand', 'updated_at'])
+
+    ledger = StockLedgerEntry.objects.create(
+        store=store,
+        variant=variant,
+        delta=-instance.quantity,
+        resulting_balance=inv.quantity_on_hand,
+        unit_price=instance.unit_price,
+        unit_cost=instance.unit_cost,
+        reason=StockLedgerEntry.Reason.SALE,
+        sync_source=StockLedgerEntry.SyncSource.AUTO_SYNC,
+        timestamp=instance.sale.sold_at or timezone.now(),
+        notes=f"Sale #{instance.sale.receipt_number or str(instance.sale_id)[:8]}"
+    )
+    SaleItem.objects.filter(id=instance.id).update(ledger_entry=ledger)
+
 
 
 # ─────────────────────────────────────────────────────────────────────────────

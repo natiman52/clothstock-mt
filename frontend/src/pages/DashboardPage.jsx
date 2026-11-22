@@ -1,29 +1,23 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
-import { useAuth } from '../context';
+import { useAuth, useStore } from '../context';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import apiClient from '../api/client';
 
 export function DashboardPage() {
   const { user, logout } = useAuth();
+  const { activeStore, setActiveStore, storesList } = useStore();
   const location = useLocation();
   const queryClient = useQueryClient();
 
-  const [selectedStore, setSelectedStore] = useState('all');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Quick count lookups for badges in the navigation
-  const { data: storesData } = useQuery({
-    queryKey: ['stores'],
-    queryFn: () => apiClient.get('/api/stores/').catch(() => null),
-  });
-
   const { data: productsData } = useQuery({
     queryKey: ['products'],
     queryFn: () => apiClient.get('/api/products/').catch(() => null),
   });
 
-  const storesList = storesData?.results || storesData || [];
   const productsCount = productsData?.count || (Array.isArray(productsData) ? productsData.length : 1420);
 
   const handleRefresh = async () => {
@@ -43,15 +37,15 @@ export function DashboardPage() {
       isActive: location.pathname === '/' || location.pathname === '/analytics',
     },
     {
-      to: '/staff',
-      label: 'Staff & Access',
-      icon: 'manage_accounts',
+      to: '/inventory',
+      label: 'Store Inventory',
+      icon: 'warehouse',
       badge: (
-        <span className="font-label-sm text-[10px] bg-secondary-fixed text-on-secondary-fixed px-1.5 py-0.5 rounded font-mono font-bold">
-          RBAC
+        <span className="font-label-sm text-[10px] bg-primary text-on-primary px-1.5 py-0.5 rounded font-mono font-bold">
+          ADJUST
         </span>
       ),
-      isActive: location.pathname.startsWith('/staff'),
+      isActive: location.pathname.startsWith('/inventory'),
     },
     {
       to: '/catalog',
@@ -62,7 +56,32 @@ export function DashboardPage() {
           {productsCount}
         </span>
       ),
-      isActive: location.pathname.startsWith('/catalog'),
+      isActive: location.pathname.startsWith('/catalog') || location.pathname.startsWith('/variants'),
+    },
+    {
+      to: '/categories',
+      label: 'Categories',
+      icon: 'category',
+      badge: null,
+      isActive: location.pathname.startsWith('/categories'),
+    },
+    {
+      to: '/stores',
+      label: 'Stores & Hubs',
+      icon: 'storefront',
+      badge: null,
+      isActive: location.pathname.startsWith('/stores'),
+    },
+    {
+      to: '/staff',
+      label: 'Staff & Access',
+      icon: 'manage_accounts',
+      badge: (
+        <span className="font-label-sm text-[10px] bg-secondary-fixed text-on-secondary-fixed px-1.5 py-0.5 rounded font-mono font-bold">
+          RBAC
+        </span>
+      ),
+      isActive: location.pathname.startsWith('/staff'),
     },
     {
       to: '/ledger',
@@ -181,22 +200,18 @@ export function DashboardPage() {
             {/* Store Location Selector */}
             <div className="flex items-center gap-1.5 min-w-0">
               <span className="material-symbols-outlined text-on-surface-variant text-[18px] hidden sm:inline">
-                storefront
+                {activeStore === 'storage' ? 'warehouse' : 'storefront'}
               </span>
               <div className="relative inline-flex items-center">
                 <select
-                  value={selectedStore}
-                  onChange={(e) => setSelectedStore(e.target.value)}
-                  className="bg-surface-container-low border border-outline-variant/40 rounded py-1 pl-2 pr-7 font-label-md text-label-md sm:text-body-md text-on-surface appearance-none focus:outline-none focus:border-secondary transition-colors cursor-pointer max-w-[170px] sm:max-w-none truncate"
+                  value={activeStore}
+                  onChange={(e) => setActiveStore(e.target.value)}
+                  className="bg-surface-container-low border border-outline-variant/40 rounded py-1 pl-2 pr-7 font-label-md text-label-md sm:text-body-md text-on-surface appearance-none focus:outline-none focus:border-secondary transition-colors cursor-pointer max-w-[200px] sm:max-w-none truncate font-medium"
                 >
-                  <option value="all">All Store Nodes ({storesList.length || 4})</option>
-                  <option value="SoHo Flagship">#01 — SoHo Flagship, NY</option>
-                  <option value="Brooklyn Hub">#02 — Brooklyn Hub, NY</option>
-                  <option value="Warehouse Newark">#DC-04 — Warehouse Newark</option>
-                  <option value="Miami Pop-up">#05 — Miami Pop-up</option>
+                  <option value="all">All Store Nodes ({storesList.length} Stores)</option>
                   {storesList.map((s) => (
-                    <option key={s.id} value={s.name}>
-                      {s.code} — {s.name}
+                    <option key={s.id} value={s.id}>
+                      {s.code} — {s.name}{s.is_warehouse ? ' [Warehouse]' : ''}
                     </option>
                   ))}
                 </select>

@@ -1,6 +1,41 @@
+import re
 import uuid
+import random
 from django.db import models
 from django.utils import timezone
+
+
+class Category(models.Model):
+    """
+    Category represents a selectable product grouping (e.g., Tops, Footwear, Outerwear).
+    """
+    name = models.CharField(max_length=100, unique=True)
+    code = models.CharField(max_length=50, unique=True, blank=True, db_index=True)
+    description = models.TextField(blank=True, default='')
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['name']
+        verbose_name = 'Category'
+        verbose_name_plural = 'Categories'
+
+    def save(self, *args, **kwargs):
+        if not self.code:
+            base_code = re.sub(r'[^A-Za-z0-9]+', '', self.name).upper()[:10]
+            if not base_code:
+                base_code = "CAT"
+            candidate = base_code
+            counter = 1
+            while Category.objects.filter(code=candidate).exclude(pk=self.pk).exists():
+                candidate = f"{base_code}{counter}"
+                counter += 1
+            self.code = candidate
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.name} ({self.code})"
 
 
 class Store(models.Model):
@@ -8,6 +43,10 @@ class Store(models.Model):
     code = models.CharField(max_length=50, unique=True, db_index=True)
     address = models.TextField(blank=True, default='')
     phone = models.CharField(max_length=50, blank=True, default='')
+    is_warehouse = models.BooleanField(
+        default=False,
+        help_text='True if this location is a central warehouse or storage facility.'
+    )
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -18,7 +57,8 @@ class Store(models.Model):
         verbose_name_plural = 'Stores'
 
     def __str__(self):
-        return f"{self.name} ({self.code})"
+        tag = ' [Warehouse]' if self.is_warehouse else ''
+        return f"{self.name} ({self.code}){tag}"
 
 
 class Product(models.Model):
@@ -30,7 +70,13 @@ class Product(models.Model):
     name = models.CharField(max_length=255)
     style_code = models.CharField(max_length=100, blank=True, default='', db_index=True)
     description = models.TextField(blank=True, default='')
-    category = models.CharField(max_length=100, blank=True, default='')
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='products'
+    )
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -39,6 +85,25 @@ class Product(models.Model):
         ordering = ['name']
         verbose_name = 'Product'
         verbose_name_plural = 'Products'
+
+    def save(self, *args, **kwargs):
+        if not self.style_code:
+            self.style_code = self.generate_style_code(self.name)
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def generate_style_code(cls, name=None):
+        prefix = 'STY'
+        if name:
+            words = re.findall(r'[A-Za-z0-9]+', name)
+            if words:
+                prefix = ''.join(w[0] for w in words[:3]).upper()
+                if len(prefix) < 2:
+                    prefix = (prefix + 'XX')[:3]
+        while True:
+            candidate = f"{prefix}-{random.randint(1000, 9999)}"
+            if not cls.objects.filter(style_code=candidate).exists():
+                return candidate
 
     def __str__(self):
         if self.style_code:
@@ -58,7 +123,7 @@ class Variant(models.Model):
         on_delete=models.CASCADE,
         related_name='variants'
     )
-    sku = models.CharField(max_length=100, unique=True, db_index=True)
+    sku = models.CharField(max_length=100, unique=True, blank=True, db_index=True)
     barcode = models.CharField(
         max_length=100,
         unique=True,
@@ -79,18 +144,56 @@ class Variant(models.Model):
         verbose_name = 'Variant'
         verbose_name_plural = 'Variants'
 
+    def save(self, *args, **kwargs):
+        if not self.sku:
+            self.sku = self.generate_sku()
+        if not self.barcode:
+            self.barcode = self.generate_barcode()
+        super().save(*args, **kwargs)
+
+    def generate_sku(self):
+        style = self.product.style_code if self.product and self.product.style_code else 'VAR'
+        clean_color = re.sub(r'[^A-Za-z0-9]', '', self.color or '').upper()[:3] or 'STD'
+        clean_size = re.sub(r'[^A-Za-z0-9]', '', self.size or '').upper() or 'OS'
+        base_sku = f"{style}-{clean_color}-{clean_size}"
+        candidate = base_sku
+        counter = 1
+        while Variant.objects.filter(sku=candidate).exclude(pk=self.pk).exists():
+            candidate = f"{base_sku}-{counter}"
+            counter += 1
+        return candidate
+
+    @classmethod
+    def generate_barcode(cls, prefix='20'):
+        """
+        Generate a unique 13-digit EAN-13 barcode standard for internal retail.
+        Calculates standard GS1 modulo-10 check digit.
+        """
+        while True:
+            needed = 12 - len(prefix)
+            body = prefix + ''.join(str(random.randint(0, 9)) for _ in range(needed))
+            checksum = sum(int(digit) * (3 if idx % 2 == 1 else 1) for idx, digit in enumerate(body))
+            check_digit = (10 - (checksum % 10)) % 10
+            candidate = f"{body}{check_digit}"
+            if not cls.objects.filter(barcode=candidate).exists():
+                return candidate
+
     def __str__(self):
         return f"{self.product.name} - {self.sku} ({self.size} / {self.color})"
 
 
 class StoreInventory(models.Model):
     """
-    StoreInventory tracks quantity on hand for a unique (store, variant) pair.
+    StoreInventory tracks quantity on hand for a (store, variant) pair.
+    store = null represents unassigned central storage / warehouse inventory.
     """
     store = models.ForeignKey(
         Store,
         on_delete=models.CASCADE,
-        related_name='inventories'
+        null=True,
+        blank=True,
+        related_name='inventories',
+        help_text='Null represents unassigned central storage / warehouse inventory.'
     )
     variant = models.ForeignKey(
         Variant,
@@ -104,16 +207,22 @@ class StoreInventory(models.Model):
     class Meta:
         verbose_name = 'Store Inventory'
         verbose_name_plural = 'Store Inventories'
-        unique_together = ('store', 'variant')
         constraints = [
             models.UniqueConstraint(
                 fields=['store', 'variant'],
-                name='unique_store_variant_inventory'
-            )
+                name='unique_store_variant_inventory',
+                condition=models.Q(store__isnull=False),
+            ),
+            models.UniqueConstraint(
+                fields=['variant'],
+                name='unique_warehouse_storage_inventory',
+                condition=models.Q(store__isnull=True),
+            ),
         ]
 
     def __str__(self):
-        return f"{self.store.name} | {self.variant.sku}: {self.quantity_on_hand} on hand"
+        store_label = self.store.name if self.store else 'Central Storage (Warehouse)'
+        return f"{store_label} | {self.variant.sku}: {self.quantity_on_hand} on hand"
 
 
 class ServerEvent(models.Model):
@@ -282,7 +391,11 @@ class StockLedgerEntry(models.Model):
 
     def __str__(self):
         sign = '+' if self.delta > 0 else ''
-        return f"{self.store.code} | {self.variant.sku}: {sign}{self.delta} -> {self.resulting_balance} ({self.reason})"
+        if hasattr(self.variant,"sku"):
+            sku = self.variant.sku 
+        else:
+            sku = "xxx-xxx-xxxxx"
+        return f"{self.store.code} | {sku}: {sign}{self.delta} -> {self.resulting_balance} ({self.reason})"
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -425,4 +538,8 @@ class SaleItem(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.sale_id} × {self.variant.sku} ×{self.quantity} @ {self.unit_price}"
+        if hasattr(self.variant,"sku"):
+            sku = self.variant.sku 
+        else:
+            sku = "xxx-xxx-xxxxx"
+        return f"{self.sale_id} × {sku} ×{self.quantity} @ {self.unit_price}"
