@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "primary-fixed-dim": "#bcc7de", "secondary-fixed-dim": "#c3c0ff", "surface": "#f8f9ff", "on-error-container": "#93000a", "tertiary-fixed": "#85f8c4", "surface-bright": "#f8f9ff", "on-secondary-container": "#fffbff", "tertiary-container": "#00301f", "surface-tint": "#545f73", "on-secondary-fixed-variant": "#3323cc", "on-primary-fixed": "#111c2d", "on-primary-container": "#8590a6", "surface-container": "#e5eeff", "surface-container-highest": "#d3e4fe", "tertiary": "#00190e", "error": "#ba1a1a", "secondary-container": "#645efb", "outline-variant": "#c5c6cd", "inverse-primary": "#bcc7de", "background": "#f8f9ff", "on-background": "#0b1c30", "outline": "#75777d", "error-container": "#ffdad6", "on-primary-fixed-variant": "#3c475a", "on-error": "#ffffff", "surface-variant": "#d3e4fe", "secondary-fixed": "#e2dfff", "on-tertiary": "#ffffff", "surface-container-low": "#eff4ff", "on-secondary": "#ffffff", "primary-container": "#1e293b", "on-tertiary-fixed-variant": "#005137", "on-secondary-fixed": "#0f0069", "surface-container-high": "#dce9ff", "on-primary": "#ffffff", "tertiary-fixed-dim": "#68dba9", "on-surface-variant": "#45474c", "on-tertiary-container": "#24a375", "primary": "#091426", "surface-container-lowest": "#ffffff", "inverse-on-surface": "#eaf1ff", "on-surface": "#0b1c30", "inverse-surface": "#213145", "surface-dim": "#cbdbf5", "secondary": "#4b41e1", "primary-fixed": "#d8e3fb", "on-tertiary-fixed": "#002114" }, "borderRadius": { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" }, "spacing": { "margin-desktop": "1.5rem", "space-sm": "0.375rem", "space-xs": "0.25rem", "space-xl": "1.5rem", "space-md": "0.625rem", "gutter-desktop": "1rem", "margin": "0.75rem", "gutter": "0.75rem", "space-lg": "1rem" }, "fontFamily": { "headline-sm": ["Hanken Grotesk"], "body-sm": ["Hanken Grotesk"], "label-md": ["JetBrains Mono"], "headline-md": ["Hanken Grotesk"], "label-sm": ["JetBrains Mono"], "body-lg": ["Hanken Grotesk"], "body-md": ["Hanken Grotesk"], "headline-lg": ["Hanken Grotesk"], "headline-lg-mobile": ["Hanken Grotesk"], "label-lg": ["JetBrains Mono"] }, "fontSize": { "headline-sm": ["16px", { "lineHeight": "22px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "label-md": ["11px", { "lineHeight": "14px", "letterSpacing": "0.02em", "fontWeight": "500" }], "headline-md": ["20px", { "lineHeight": "26px", "letterSpacing": "-0.015em", "fontWeight": "600" }], "label-sm": ["10px", { "lineHeight": "12px", "letterSpacing": "0.04em", "fontWeight": "600" }], "body-lg": ["15px", { "lineHeight": "22px", "fontWeight": "400" }], "body-md": ["13px", { "lineHeight": "18px", "fontWeight": "400" }], "headline-lg": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "headline-lg-mobile": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "700" }], "label-lg": ["13px", { "lineHeight": "18px", "letterSpacing": "0.01em", "fontWeight": "500" }] } } } };</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-margin flex items-center justify-between gap-space-sm"><div class="flex items-center gap-space-sm min-w-0 flex-1"><img alt="OmniRetail Sync Logo" class="h-8 w-auto object-contain shrink-0" src="https://lh3.googleusercontent.com/aida/ALJJyrBActeDtpbptPS-oXZWVrakRqWjzy4Fm2sgstNQFFmEggRtbRthSaVDkr_zSh8vVZPguHlaLTx_Y_xounAypho0C_26CQdM9ZSboRWOeo2U1Z2SmreaPPSB-79mKe23fs8HteebTmtflNpJb7CpQfzeI4Nkje6SFy445cBFz9iZwZ0qgrzxAfjX6R8gKjrMDvxAhm7mUK2GRIuVqqaTuCx8PEAYfwYH6OXitbrVfPxVmg"/><div class="flex flex-col min-w-0"><div class="flex items-center gap-space-xs"><span class="font-label-sm text-label-sm text-on-surface font-semibold truncate">Flagship Soho</span><span class="font-label-sm text-label-sm text-on-surface-variant font-normal">• #01</span><span class="material-symbols-outlined text-[16px] text-on-surface-variant shrink-0">arrow_drop_down</span></div><span class="font-headline-sm text-headline-sm text-on-surface font-semibold truncate">Stock Ledger</span></div></div><div class="flex items-center gap-space-sm shrink-0"><div class="inline-flex items-center gap-space-xs px-space-sm py-space-xs rounded-full bg-surface-container-low"><span class="w-2 h-2 rounded-full bg-[#10b981] shrink-0"></span><span class="font-label-sm text-label-sm text-on-surface font-medium hidden sm:inline">Online (Synced 2m ago)</span><span class="font-label-sm text-label-sm text-on-surface font-medium sm:hidden">Synced</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full pt-16 pb-24 bg-surface min-h-screen"><div class="flex flex-col w-full pb-8">
+<!-- Dynamic Operational Telemetry Ribbon -->
+<div class="px-margin mb-space-md">
+<div class="bg-primary-container text-on-primary rounded-xl p-space-md shadow-md flex items-center justify-between gap-space-sm relative overflow-hidden">
+<div class="absolute right-0 top-0 bottom-0 w-28 bg-gradient-to-l from-secondary/15 to-transparent pointer-events-none"></div>
+<div class="flex items-center gap-space-sm z-10 min-w-0">
+<div class="w-8 h-8 rounded-full bg-secondary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-on-secondary text-[18px]">verified</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-headline-sm text-headline-sm truncate text-surface">Immutable Event Log</span>
+<span class="font-label-sm text-label-sm text-on-primary-container truncate">SHA-256 Verified Ledger • 1,482 sync blocks today</span>
+</div>
+</div>
+<button class="shrink-0 px-space-sm py-space-xs rounded-full bg-surface-container-high/20 hover:bg-surface-container-high/30 text-surface flex items-center gap-space-xs transition-colors" id="quick-refresh-btn">
+<span class="material-symbols-outlined text-[16px] text-tertiary-fixed" id="sync-icon">sync</span>
+<span class="font-label-sm text-label-sm font-semibold tracking-wide uppercase">Live</span>
+</button>
+</div>
+</div>
+<!-- Filter & Search Controls Zone -->
+<div class="px-margin mb-space-md">
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-sm">
+<!-- Search Input with Barcode Affordance -->
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-on-surface-variant text-[18px] pointer-events-none">search</span>
+<input class="w-full h-11 pl-10 pr-24 rounded-lg bg-surface-container-low text-on-surface placeholder:text-outline font-label-md text-label-md outline-none focus:bg-surface-container focus:text-primary transition-all" id="ledger-search-input" placeholder="Search SKU, Barcode, or Batch #..." type="text"/>
+<div class="absolute right-2 flex items-center gap-1">
+<button class="w-7 h-7 rounded-lg bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:text-primary active:scale-95 transition-all" title="Scan Barcode">
+<span class="material-symbols-outlined text-[16px]">qr_code_scanner</span>
+</button>
+<span class="px-1.5 py-0.5 rounded bg-surface-variant text-on-surface-variant font-label-sm text-[9px] uppercase tracking-wider hidden sm:inline">Ctrl+K</span>
+</div>
+</div>
+<!-- Branch & Reason Code Dropdowns (Horizontal Scrollable on narrow screens) -->
+<div class="grid grid-cols-2 gap-space-sm">
+<div class="relative flex items-center">
+<select class="w-full h-10 px-space-sm pr-7 rounded-lg bg-surface-container-low text-on-surface font-label-md text-label-md appearance-none outline-none focus:bg-surface-container transition-colors truncate" id="branch-filter">
+<option value="ALL">All Locations</option>
+<option selected="" value="SOHO">SoHo Flagship (#01)</option>
+<option value="NEWARK">Warehouse Newark (#08)</option>
+<option value="BROOKLYN">Brooklyn Hub (#03)</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 text-on-surface-variant pointer-events-none text-[18px]">expand_more</span>
+</div>
+<div class="relative flex items-center">
+<select class="w-full h-10 px-space-sm pr-7 rounded-lg bg-surface-container-low text-on-surface font-label-md text-label-md appearance-none outline-none focus:bg-surface-container transition-colors truncate" id="reason-filter">
+<option value="ALL">All Reasons</option>
+<option value="SALE">SALE</option>
+<option value="WAREHOUSE_TRANSFER">WAREHOUSE_TRANSFER</option>
+<option value="STOCK_ADJUSTMENT">STOCK_ADJUSTMENT</option>
+<option value="STOCKTAKE_RECONCILIATION">STOCKTAKE_RECON</option>
+<option value="BULK_IMPORT">BULK_IMPORT</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 text-on-surface-variant pointer-events-none text-[18px]">filter_list</span>
+</div>
+</div>
+<!-- Toggle & Export Action Bar -->
+<div class="pt-space-xs flex flex-wrap items-center justify-between gap-space-sm">
+<!-- Discrepancy Switch Pill -->
+<label class="cursor-pointer inline-flex items-center gap-space-xs select-none" for="discrepancy-toggle">
+<input class="sr-only peer" id="discrepancy-toggle" type="checkbox"/>
+<div class="w-9 h-5 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-surface peer-checked:bg-error after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-surface-container-lowest after:rounded-full after:h-4 after:w-4 after:transition-all relative transition-colors"></div>
+<div class="flex items-center gap-1">
+<span class="font-headline-sm text-body-sm text-on-surface font-medium">Negative / Discrepancies</span>
+<span class="px-1.5 py-0.5 rounded-full bg-error-container text-on-error-container font-label-sm text-[10px] font-bold" id="discrepancy-pill-count">2 Alerts</span>
+</div>
+</label>
+<!-- CSV Export Button with Tactile Feedback -->
+<button class="h-9 px-space-md rounded-lg bg-surface-container-low hover:bg-surface-container-high text-on-surface flex items-center gap-space-xs active:scale-95 transition-all shadow-sm" id="export-csv-btn">
+<span class="material-symbols-outlined text-[16px] text-secondary">file_download</span>
+<span class="font-label-md text-label-md font-semibold">Export CSV</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Summary Metric Strip -->
+<div class="px-margin mb-space-md grid grid-cols-3 gap-space-sm">
+<div class="bg-surface-container-lowest rounded-xl p-space-sm flex flex-col justify-between shadow-sm min-w-0">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline uppercase truncate">Inbound</span>
+<span class="material-symbols-outlined text-on-tertiary-container text-[14px]">arrow_downward</span>
+</div>
+<div class="mt-space-xs">
+<span class="font-headline-md text-headline-md text-on-surface font-semibold">+135</span>
+<span class="font-label-sm text-[10px] text-on-surface-variant block truncate">2 shipments</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-space-sm flex flex-col justify-between shadow-sm min-w-0">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline uppercase truncate">Outflow</span>
+<span class="material-symbols-outlined text-secondary text-[14px]">shopping_cart</span>
+</div>
+<div class="mt-space-xs">
+<span class="font-headline-md text-headline-md text-on-surface font-semibold">-3</span>
+<span class="font-label-sm text-[10px] text-on-surface-variant block truncate">Tendered POS</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-space-sm flex flex-col justify-between shadow-sm min-w-0">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-error uppercase truncate">Critical</span>
+<span class="material-symbols-outlined text-error text-[14px]">warning</span>
+</div>
+<div class="mt-space-xs">
+<span class="font-headline-md text-headline-md text-error font-semibold">-1</span>
+<span class="font-label-sm text-[10px] text-error truncate block font-bold">Needs Audit</span>
+</div>
+</div>
+</div>
+<!-- Audit Ledger Transaction List -->
+<div class="px-margin flex flex-col gap-space-sm" id="ledger-entries-container">
+<div class="flex items-center justify-between px-space-xs mb-space-xs">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider font-semibold">Ledger Stream (Real-Time Feed)</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-mono">Showing 4 of 4</span>
+</div>
+<!-- Row 1: Discrepancy / Urgent Attention (Overland Tech Trench) -->
+<div class="ledger-row bg-surface-container-lowest rounded-xl p-space-md shadow-sm relative overflow-hidden transition-all hover:shadow-md flex flex-col gap-space-sm" data-branch="SOHO" data-discrepancy="true" data-reason="SALE" data-sku="OTT-BLK-L">
+<!-- Accent indicator tab -->
+<div class="absolute left-0 top-0 bottom-0 w-1.5 bg-error"></div>
+<!-- Header: Timestamps & Stores -->
+<div class="flex items-start justify-between gap-space-xs">
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-space-xs">
+<span class="px-1.5 py-0.5 rounded bg-error-container text-on-error-container font-label-sm text-[9px] font-bold uppercase tracking-wider flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[11px]">report_problem</span>
+              Discrepancy
+            </span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-mono">Today, 14:22:08</span>
+</div>
+<span class="font-headline-sm text-body-lg font-semibold text-on-surface mt-space-xs truncate">OTT-BLK-L</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Overland Tech Trench • Black / Large</span>
+</div>
+<!-- Delta & Resulting Balances (Monospace tabular) -->
+<div class="flex flex-col items-end shrink-0">
+<div class="px-2.5 py-0.5 rounded-full bg-error-container text-on-error-container font-label-lg text-label-lg font-bold">
+            -1
+          </div>
+<div class="mt-space-xs flex items-center gap-1">
+<span class="font-label-sm text-label-sm text-outline">Bal:</span>
+<span class="font-label-md text-label-md font-bold text-error font-mono">-1 Units</span>
+</div>
+</div>
+</div>
+<!-- Meta Bar: Sync, Reason, Operator -->
+<div class="rounded-lg bg-surface-container-low p-space-sm flex flex-col sm:flex-row sm:items-center justify-between gap-space-xs">
+<div class="flex flex-wrap items-center gap-x-space-sm gap-y-1">
+<div class="flex items-center gap-1 text-on-surface">
+<span class="material-symbols-outlined text-[14px] text-secondary">storefront</span>
+<span class="font-label-sm text-label-sm font-semibold">SoHo Flagship</span>
+</div>
+<span class="text-outline-variant hidden sm:inline">•</span>
+<div class="flex items-center gap-1 text-on-surface-variant">
+<span class="font-label-sm text-label-sm font-mono font-medium">SALE (POS #02)</span>
+</div>
+<span class="text-outline-variant hidden sm:inline">•</span>
+<div class="flex items-center gap-1">
+<span class="px-1 rounded bg-surface-variant text-on-surface-variant font-label-sm text-[9px] font-mono">AUTO_SYNC</span>
+</div>
+<span class="text-outline-variant hidden sm:inline">•</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Cashier: M. Rivera</span>
+</div>
+<!-- Action Button to Trigger Reconcile Modal -->
+<button class="shrink-0 mt-space-xs sm:mt-0 h-8 px-space-md rounded-lg bg-error hover:bg-error/90 text-on-error font-label-md text-label-md font-bold flex items-center justify-center gap-1 active:scale-95 transition-all shadow-sm" onclick="openReconcileModal('OTT-BLK-L', 'Overland Tech Trench - Black/L', -1, 'SoHo Flagship')">
+<span class="material-symbols-outlined text-[15px]">build_circle</span>
+<span>Reconcile Count</span>
+</button>
+</div>
+</div>
+<!-- Row 2: Inbound Warehouse Transfer (Vanguard Cargo) -->
+<div class="ledger-row bg-surface-container-lowest rounded-xl p-space-md shadow-sm relative overflow-hidden transition-all hover:shadow-md flex flex-col gap-space-sm" data-branch="SOHO" data-discrepancy="false" data-reason="WAREHOUSE_TRANSFER" data-sku="VGC-OLV-32">
+<div class="absolute left-0 top-0 bottom-0 w-1.5 bg-tertiary-container"></div>
+<div class="flex items-start justify-between gap-space-xs">
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-space-xs">
+<span class="px-1.5 py-0.5 rounded bg-tertiary-fixed text-on-tertiary-fixed-variant font-label-sm text-[9px] font-bold uppercase tracking-wider flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[11px]">local_shipping</span>
+              Inbound Transfer
+            </span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-mono">Today, 11:05:40</span>
+</div>
+<span class="font-headline-sm text-body-lg font-semibold text-on-surface mt-space-xs truncate">VGC-OLV-32</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Vanguard Cargo • Olive / 32</span>
+</div>
+<div class="flex flex-col items-end shrink-0">
+<div class="px-2.5 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed-variant font-label-lg text-label-lg font-bold">
+            +15
+          </div>
+<div class="mt-space-xs flex items-center gap-1">
+<span class="font-label-sm text-label-sm text-outline">Bal:</span>
+<span class="font-label-md text-label-md font-bold text-on-surface font-mono">18 Units</span>
+</div>
+</div>
+</div>
+<div class="rounded-lg bg-surface-container-low p-space-sm flex items-center justify-between gap-space-xs flex-wrap">
+<div class="flex flex-wrap items-center gap-x-space-sm gap-y-1">
+<div class="flex items-center gap-1 text-on-surface">
+<span class="material-symbols-outlined text-[14px] text-secondary">storefront</span>
+<span class="font-label-sm text-label-sm font-semibold">SoHo Flagship</span>
+</div>
+<span class="text-outline-variant">•</span>
+<div class="flex items-center gap-1 text-on-surface-variant">
+<span class="font-label-sm text-label-sm font-mono font-medium">WAREHOUSE_TRANSFER (#TR-9041)</span>
+</div>
+<span class="text-outline-variant">•</span>
+<span class="px-1 rounded bg-surface-variant text-on-surface-variant font-label-sm text-[9px] font-mono">MANUAL_FILE</span>
+<span class="text-outline-variant">•</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Logistics: K. Chen</span>
+</div>
+<div class="flex items-center gap-1 text-on-tertiary-container font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+<span>Verified Dock Receipt</span>
+</div>
+</div>
+</div>
+<!-- Row 3: Overseas Bulk Container Intake (Chelsea Lug Boot) -->
+<div class="ledger-row bg-surface-container-lowest rounded-xl p-space-md shadow-sm relative overflow-hidden transition-all hover:shadow-md flex flex-col gap-space-sm" data-branch="NEWARK" data-discrepancy="false" data-reason="BULK_IMPORT" data-sku="CLB-BRN-42">
+<div class="absolute left-0 top-0 bottom-0 w-1.5 bg-secondary"></div>
+<div class="flex items-start justify-between gap-space-xs">
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-space-xs">
+<span class="px-1.5 py-0.5 rounded bg-secondary-fixed text-on-secondary-fixed font-label-sm text-[9px] font-bold uppercase tracking-wider flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[11px]">directions_boat</span>
+              Customs Clear / Bulk Import
+            </span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-mono">Yesterday, 18:30:12</span>
+</div>
+<span class="font-headline-sm text-body-lg font-semibold text-on-surface mt-space-xs truncate">CLB-BRN-42</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Chelsea Lug Boot • Brown / 42</span>
+</div>
+<div class="flex flex-col items-end shrink-0">
+<div class="px-2.5 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-lg text-label-lg font-bold">
+            +120
+          </div>
+<div class="mt-space-xs flex items-center gap-1">
+<span class="font-label-sm text-label-sm text-outline">Bal:</span>
+<span class="font-label-md text-label-md font-bold text-on-surface font-mono">142 Units</span>
+</div>
+</div>
+</div>
+<div class="rounded-lg bg-surface-container-low p-space-sm flex items-center justify-between gap-space-xs flex-wrap">
+<div class="flex flex-wrap items-center gap-x-space-sm gap-y-1">
+<div class="flex items-center gap-1 text-on-surface">
+<span class="material-symbols-outlined text-[14px] text-secondary">warehouse</span>
+<span class="font-label-sm text-label-sm font-semibold">Newark Port Warehouse</span>
+</div>
+<span class="text-outline-variant">•</span>
+<div class="flex items-center gap-1 text-on-surface-variant">
+<span class="font-label-sm text-label-sm font-mono font-medium">BULK_IMPORT (Vessel MSC Aurora)</span>
+</div>
+<span class="text-outline-variant">•</span>
+<span class="px-1 rounded bg-surface-variant text-on-surface-variant font-label-sm text-[9px] font-mono">WEB_ADMIN</span>
+<span class="text-outline-variant">•</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Admin: S. Vance</span>
+</div>
+<div class="flex items-center gap-1 text-secondary font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[15px]">inventory_2</span>
+<span>Manifest #BOL-88219</span>
+</div>
+</div>
+</div>
+<!-- Row 4: Physical Stocktake Adjustment (Heavyweight Tee) -->
+<div class="ledger-row bg-surface-container-lowest rounded-xl p-space-md shadow-sm relative overflow-hidden transition-all hover:shadow-md flex flex-col gap-space-sm" data-branch="BROOKLYN" data-discrepancy="true" data-reason="STOCKTAKE_RECONCILIATION" data-sku="HWT-BLK-M">
+<div class="absolute left-0 top-0 bottom-0 w-1.5 bg-error"></div>
+<div class="flex items-start justify-between gap-space-xs">
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-space-xs">
+<span class="px-1.5 py-0.5 rounded bg-error-container text-on-error-container font-label-sm text-[9px] font-bold uppercase tracking-wider flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[11px]">tune</span>
+              Audit Write-Down
+            </span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-mono">Oct 24, 09:15:00</span>
+</div>
+<span class="font-headline-sm text-body-lg font-semibold text-on-surface mt-space-xs truncate">HWT-BLK-M</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Heavyweight Tee • Black / M</span>
+</div>
+<div class="flex flex-col items-end shrink-0">
+<div class="px-2.5 py-0.5 rounded-full bg-error-container text-on-error-container font-label-lg text-label-lg font-bold">
+            -2
+          </div>
+<div class="mt-space-xs flex items-center gap-1">
+<span class="font-label-sm text-label-sm text-outline">Bal:</span>
+<span class="font-label-md text-label-md font-bold text-on-surface font-mono">24 Units</span>
+</div>
+</div>
+</div>
+<div class="rounded-lg bg-surface-container-low p-space-sm flex items-center justify-between gap-space-xs flex-wrap">
+<div class="flex flex-wrap items-center gap-x-space-sm gap-y-1">
+<div class="flex items-center gap-1 text-on-surface">
+<span class="material-symbols-outlined text-[14px] text-secondary">hub</span>
+<span class="font-label-sm text-label-sm font-semibold">Brooklyn Hub</span>
+</div>
+<span class="text-outline-variant">•</span>
+<div class="flex items-center gap-1 text-on-surface-variant">
+<span class="font-label-sm text-label-sm font-mono font-medium">STOCKTAKE_RECONCILIATION</span>
+</div>
+<span class="text-outline-variant">•</span>
+<span class="px-1 rounded bg-surface-variant text-on-surface-variant font-label-sm text-[9px] font-mono">AUTO_SYNC</span>
+<span class="text-outline-variant">•</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Audit Mgr: D. Hayes</span>
+</div>
+<button class="h-7 px-space-sm rounded bg-surface-container-high hover:bg-surface-container text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm flex items-center gap-1 transition-colors" onclick="openReconcileModal('HWT-BLK-M', 'Heavyweight Tee - Black/M', 24, 'Brooklyn Hub')">
+<span class="material-symbols-outlined text-[14px]">history</span>
+<span>View Audit History</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Operational Context Card: Real-time Reconciliation Insights -->
+<div class="px-margin mt-space-md">
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex items-start gap-space-md">
+<div class="w-10 h-10 rounded-full bg-secondary-fixed flex items-center justify-center shrink-0 text-on-secondary-fixed">
+<span class="material-symbols-outlined text-[20px]">insights</span>
+</div>
+<div class="flex flex-col min-w-0 flex-1">
+<span class="font-headline-sm text-body-lg font-semibold text-on-surface">Weekly Shrinkage Velocity</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+          Outflow variances are tracked automatically via barcode scans. Branch <strong class="text-on-surface">SoHo Flagship</strong> has resolved 98.4% of delta variances within standard 2-hour window.
+        </p>
+</div>
+</div>
+</div>
+<!-- Physical Stocktake Reconciliation Modal / Drawer -->
+<div class="fixed inset-0 z-50 flex flex-col justify-end bg-primary/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-200" id="reconcile-drawer">
+<div class="bg-surface-container-lowest w-full max-w-lg mx-auto rounded-t-xl shadow-2xl p-space-lg flex flex-col gap-space-md transform translate-y-full transition-transform duration-300" id="reconcile-drawer-panel">
+<!-- Drawer Pull Notch -->
+<div class="w-12 h-1 bg-surface-variant rounded-full mx-auto mb-1"></div>
+<!-- Drawer Header -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-9 h-9 rounded-full bg-error-container text-on-error-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px]">balance</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-headline-sm text-body-lg font-bold text-on-surface truncate" id="drawer-sku-title">Reconcile Physical Stock - OTT-BLK-L</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant truncate" id="drawer-sku-subtitle">Overland Tech Trench - Black/L • SoHo Flagship</span>
+</div>
+</div>
+<button class="w-8 h-8 rounded-full bg-surface-container-low hover:bg-surface-container text-on-surface-variant flex items-center justify-center transition-colors" onclick="closeReconcileModal()">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<!-- Calculations Card: Expected vs Physical Stepper -->
+<div class="bg-surface-container-low rounded-xl p-space-md flex flex-col gap-space-sm">
+<div class="flex items-center justify-between text-body-sm text-on-surface-variant font-label-md">
+<span>Expected System Balance:</span>
+<span class="font-mono font-bold text-error px-2 py-0.5 rounded bg-error-container text-on-error-container text-label-md" id="drawer-expected-balance">-1 Units</span>
+</div>
+<!-- Physical Count Stepper Input -->
+<div class="flex items-center justify-between gap-space-md pt-space-xs">
+<label class="font-headline-sm text-body-sm font-semibold text-on-surface" for="physical-count-input">Physical Count Verified:</label>
+<div class="flex items-center bg-surface-container-lowest rounded-lg shadow-sm p-1">
+<button class="w-9 h-9 rounded-md bg-surface-container-low hover:bg-surface-container-high text-on-surface flex items-center justify-center active:scale-95 transition-all" onclick="adjustCount(-1)" type="button">
+<span class="material-symbols-outlined text-[18px]">remove</span>
+</button>
+<input class="w-14 text-center font-mono font-bold text-headline-sm bg-transparent outline-none text-on-surface" id="physical-count-input" onchange="recalculateVariance()" onkeyup="recalculateVariance()" type="number" value="0"/>
+<button class="w-9 h-9 rounded-md bg-surface-container-low hover:bg-surface-container-high text-on-surface flex items-center justify-center active:scale-95 transition-all" onclick="adjustCount(1)" type="button">
+<span class="material-symbols-outlined text-[18px]">add</span>
+</button>
+</div>
+</div>
+<!-- Discrepancy delta calculation chip -->
+<div class="mt-space-xs pt-space-xs flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline uppercase font-semibold">Adjustment Required:</span>
+<span class="px-2 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed-variant font-label-md text-label-md font-bold font-mono" id="variance-chip">
+            +1 variance adjustment
+          </span>
+</div>
+</div>
+<!-- Discrepancy Reason Selector -->
+<div class="flex flex-col gap-space-xs">
+<label class="font-label-sm text-label-sm text-on-surface-variant font-semibold uppercase" for="reconcile-reason-select">Reconciliation Audit Reason</label>
+<div class="relative flex items-center">
+<select class="w-full h-11 px-space-md pr-8 rounded-lg bg-surface-container-low text-on-surface font-label-md text-label-md appearance-none outline-none focus:bg-surface-container transition-colors" id="reconcile-reason-select">
+<option selected="" value="MISCOUNT">Miscount during standard POS shift</option>
+<option value="DAMAGED">Damaged during intake / Unsalable</option>
+<option value="SAMPLE">Unrecorded supplier promotional sample</option>
+<option value="THEFT">Suspected shrinkage / Store theft</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 text-on-surface-variant pointer-events-none text-[18px]">expand_more</span>
+</div>
+</div>
+<!-- Operator Signature / Notes Input -->
+<div class="flex flex-col gap-space-xs">
+<label class="font-label-sm text-label-sm text-on-surface-variant font-semibold uppercase" for="reconcile-notes-input">Ledger Audit Note</label>
+<input class="w-full h-10 px-space-md rounded-lg bg-surface-container-low text-on-surface placeholder:text-outline font-body-sm text-body-sm outline-none focus:bg-surface-container transition-colors" id="reconcile-notes-input" placeholder="e.g. Rack #4 counted twice by supervisor" type="text"/>
+</div>
+<!-- Footer Action Buttons -->
+<div class="pt-space-xs flex items-center justify-end gap-space-sm">
+<button class="h-11 px-space-md rounded-lg bg-surface-container-low hover:bg-surface-container-high text-on-surface font-label-md text-label-md font-semibold transition-colors" onclick="closeReconcileModal()">
+          Cancel
+        </button>
+<button class="h-11 px-space-lg rounded-lg bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md font-bold flex items-center gap-space-xs active:scale-95 transition-all shadow-md" onclick="commitAdjustment()">
+<span class="material-symbols-outlined text-[18px] text-tertiary-fixed">check_circle</span>
+<span>Commit Ledger Adjustment</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Toast Notification Feedback -->
+<div class="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 bg-primary-container text-on-primary px-space-md py-space-sm rounded-full shadow-xl flex items-center gap-space-xs opacity-0 pointer-events-none transition-opacity duration-200" id="toast">
+<span class="material-symbols-outlined text-[18px] text-tertiary-fixed" id="toast-icon">check_circle</span>
+<span class="font-label-md text-label-md font-semibold" id="toast-message">Ledger updated successfully</span>
+</div>
+</div>
+<script>
+  let currentSystemBalance = -1;
+  let activeSku = 'OTT-BLK-L';
+
+  function openReconcileModal(sku, name, expectedBal, store) {
+    activeSku = sku;
+    currentSystemBalance = Number(expectedBal);
+    
+    document.getElementById('drawer-sku-title').textContent = 'Reconcile Physical Stock - ' + sku;
+    document.getElementById('drawer-sku-subtitle').textContent = name + ' • ' + store;
+    document.getElementById('drawer-expected-balance').textContent = (currentSystemBalance > 0 ? '+' : '') + currentSystemBalance + ' Units';
+    
+    // Set initial physical count to 0 or 1
+    const defaultPhysical = currentSystemBalance < 0 ? 0 : currentSystemBalance;
+    document.getElementById('physical-count-input').value = defaultPhysical;
+    recalculateVariance();
+
+    const drawer = document.getElementById('reconcile-drawer');
+    const panel = document.getElementById('reconcile-drawer-panel');
+    drawer.classList.remove('pointer-events-none', 'opacity-0');
+    drawer.classList.add('opacity-100');
+    panel.classList.remove('translate-y-full');
+    panel.classList.add('translate-y-0');
+  }
+
+  function closeReconcileModal() {
+    const drawer = document.getElementById('reconcile-drawer');
+    const panel = document.getElementById('reconcile-drawer-panel');
+    drawer.classList.add('pointer-events-none');
+    drawer.classList.remove('opacity-100');
+    drawer.classList.add('opacity-0');
+    panel.classList.add('translate-y-full');
+    panel.classList.remove('translate-y-0');
+  }
+
+  function adjustCount(amount) {
+    const input = document.getElementById('physical-count-input');
+    let val = parseInt(input.value || '0', 10);
+    val += amount;
+    if (val < 0) val = 0;
+    input.value = val;
+    recalculateVariance();
+  }
+
+  function recalculateVariance() {
+    const input = document.getElementById('physical-count-input');
+    const physical = parseInt(input.value || '0', 10);
+    const variance = physical - currentSystemBalance;
+    const varianceChip = document.getElementById('variance-chip');
+    
+    const sign = variance >= 0 ? '+' : '';
+    varianceChip.textContent = sign + variance + ' variance adjustment';
+
+    if (variance === 0) {
+      varianceChip.className = 'px-2 py-1 rounded-full bg-surface-container-high text-on-surface font-label-md text-label-md font-bold font-mono';
+    } else if (variance > 0) {
+      varianceChip.className = 'px-2 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed-variant font-label-md text-label-md font-bold font-mono';
+    } else {
+      varianceChip.className = 'px-2 py-1 rounded-full bg-error-container text-on-error-container font-label-md text-label-md font-bold font-mono';
+    }
+  }
+
+  function commitAdjustment() {
+    const input = document.getElementById('physical-count-input');
+    const reason = document.getElementById('reconcile-reason-select').value;
+    const physical = parseInt(input.value || '0', 10);
+    const diff = physical - currentSystemBalance;
+    
+    closeReconcileModal();
+    showToast('Committed adjustment: ' + (diff >= 0 ? '+' : '') + diff + ' for ' + activeSku, 'verified');
+
+    // Dynamically mark row 1 as resolved if adjusting OTT-BLK-L
+    if (activeSku === 'OTT-BLK-L') {
+      const row = document.querySelector('[data-sku="OTT-BLK-L"]');
+      if (row) {
+        row.setAttribute('data-discrepancy', 'false');
+        const badge = row.querySelector('.bg-error-container');
+        if (badge) {
+          badge.className = 'px-1.5 py-0.5 rounded bg-tertiary-fixed text-on-tertiary-fixed-variant font-label-sm text-[9px] font-bold uppercase tracking-wider flex items-center gap-0.5';
+          badge.innerHTML = '<span class="material-symbols-outlined text-[11px]">done_all</span> Reconciled';
+        }
+        const deltaPill = row.querySelector('.font-label-lg');
+        if (deltaPill) {
+          deltaPill.className = 'px-2.5 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed-variant font-label-lg text-label-lg font-bold';
+          deltaPill.textContent = '0';
+        }
+        const balLabel = row.querySelector('.text-error');
+        if (balLabel) {
+          balLabel.className = 'font-label-md text-label-md font-bold text-on-surface font-mono';
+          balLabel.textContent = physical + ' Units';
+        }
+      }
+    }
+  }
+
+  function showToast(msg, icon = 'check_circle') {
+    const toast = document.getElementById('toast');
+    const toastMsg = document.getElementById('toast-message');
+    const toastIcon = document.getElementById('toast-icon');
+    toastMsg.textContent = msg;
+    toastIcon.textContent = icon;
+    
+    toast.classList.remove('opacity-0', 'pointer-events-none');
+    toast.classList.add('opacity-100');
+    setTimeout(() => {
+      toast.classList.remove('opacity-100');
+      toast.classList.add('opacity-0', 'pointer-events-none');
+    }, 2800);
+  }
+
+  // Filter & Search Logic
+  const searchInput = document.getElementById('ledger-search-input');
+  const branchSelect = document.getElementById('branch-filter');
+  const reasonSelect = document.getElementById('reason-filter');
+  const discrepancyToggle = document.getElementById('discrepancy-toggle');
+  const rows = document.querySelectorAll('.ledger-row');
+
+  function applyFilters() {
+    const query = searchInput.value.toLowerCase().trim();
+    const branch = branchSelect.value;
+    const reason = reasonSelect.value;
+    const onlyDiscrepancies = discrepancyToggle.checked;
+
+    rows.forEach(row => {
+      const text = row.textContent.toLowerCase();
+      const rowDiscrepancy = row.getAttribute('data-discrepancy') === 'true';
+      const rowBranch = row.getAttribute('data-branch');
+      const rowReason = row.getAttribute('data-reason');
+
+      const matchesQuery = !query || text.includes(query);
+      const matchesBranch = (branch === 'ALL') || (rowBranch === branch);
+      const matchesReason = (reason === 'ALL') || (rowReason === reason);
+      const matchesDiscrepancy = !onlyDiscrepancies || rowDiscrepancy;
+
+      if (matchesQuery && matchesBranch && matchesReason && matchesDiscrepancy) {
+        row.style.display = 'flex';
+      } else {
+        row.style.display = 'none';
+      }
+    });
+  }
+
+  searchInput.addEventListener('input', applyFilters);
+  branchSelect.addEventListener('change', applyFilters);
+  reasonSelect.addEventListener('change', applyFilters);
+  discrepancyToggle.addEventListener('change', applyFilters);
+
+  // CSV Export Mock
+  document.getElementById('export-csv-btn').addEventListener('click', () => {
+    showToast('Exporting audit_ledger_2025.csv...', 'download');
+    setTimeout(() => {
+      showToast('Downloaded 4 ledger lines to CSV.', 'file_download_done');
+    }, 1200);
+  });
+
+  // Live Sync trigger animation
+  document.getElementById('quick-refresh-btn').addEventListener('click', () => {
+    const icon = document.getElementById('sync-icon');
+    icon.classList.add('animate-spin');
+    setTimeout(() => {
+      icon.classList.remove('animate-spin');
+      showToast('Chain head synced to #01 SoHo node', 'cloud_done');
+    }, 800);
+  });
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-1px_8px_rgba(0,0,0,0.04)]" data-active-classes="text-secondary font-semibold"><div class="flex items-center justify-around h-16 px-space-xs"><a class="flex flex-col items-center justify-center min-w-[64px] min-h-[44px] text-on-surface-variant hover:text-on-surface transition-colors" data-path="analytics" href="#"><span class="material-symbols-outlined text-[22px]">dashboard</span><span class="font-label-sm text-label-sm mt-space-xs">Analytics</span></a><a class="flex flex-col items-center justify-center min-w-[64px] min-h-[44px] text-on-surface-variant hover:text-on-surface transition-colors" data-path="catalog-and-imports" href="#"><span class="material-symbols-outlined text-[22px]">inventory_2</span><span class="font-label-sm text-label-sm mt-space-xs">Catalog</span></a><a class="flex flex-col items-center justify-center min-w-[64px] min-h-[44px] text-on-surface-variant hover:text-on-surface transition-colors relative" data-path="pos-terminal" href="#"><div class="relative flex items-center justify-center"><span class="material-symbols-outlined text-[22px]">barcode_scanner</span><span class="absolute -top-1 -right-2 px-1 py-0.5 rounded-full bg-secondary text-on-secondary font-label-sm text-[8px] leading-tight font-bold">POS</span></div><span class="font-label-sm text-label-sm mt-space-xs">Terminal</span></a><a aria-current="page" class="flex flex-col items-center justify-center min-w-[64px] min-h-[44px] transition-colors text-secondary font-semibold" data-path="stock-ledger" href="#"><span class="material-symbols-outlined text-[22px]">receipt_long</span><span class="font-label-sm text-label-sm mt-space-xs">Ledger</span></a></div></nav></body></html>

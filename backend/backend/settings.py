@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'django_filters',
     # Local apps
     'apps.user',
+    'apps.inventory',
 ]
 
 REST_FRAMEWORK = {
@@ -55,7 +56,6 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
     ],
     # 2. Permissions: Who can access endpoints by default
     'DEFAULT_PERMISSION_CLASSES': [
@@ -87,13 +87,8 @@ MIDDLEWARE = [
 ]
 
 # CORS configuration for frontend integration (e.g. React/Vite)
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-]
-CORS_ALLOW_ALL_ORIGINS = DEBUG
+CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:8080","http://127.0.0.1:5173"]
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
 AUTH_USER_MODEL = "user.User"

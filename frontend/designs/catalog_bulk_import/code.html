@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "primary-fixed-dim": "#bcc7de", "secondary-fixed-dim": "#c3c0ff", "surface": "#f8f9ff", "on-error-container": "#93000a", "tertiary-fixed": "#85f8c4", "surface-bright": "#f8f9ff", "on-secondary-container": "#fffbff", "tertiary-container": "#00301f", "surface-tint": "#545f73", "on-secondary-fixed-variant": "#3323cc", "on-primary-fixed": "#111c2d", "on-primary-container": "#8590a6", "surface-container": "#e5eeff", "surface-container-highest": "#d3e4fe", "tertiary": "#00190e", "error": "#ba1a1a", "secondary-container": "#645efb", "outline-variant": "#c5c6cd", "inverse-primary": "#bcc7de", "background": "#f8f9ff", "on-background": "#0b1c30", "outline": "#75777d", "error-container": "#ffdad6", "on-primary-fixed-variant": "#3c475a", "on-error": "#ffffff", "surface-variant": "#d3e4fe", "secondary-fixed": "#e2dfff", "on-tertiary": "#ffffff", "surface-container-low": "#eff4ff", "on-secondary": "#ffffff", "primary-container": "#1e293b", "on-tertiary-fixed-variant": "#005137", "on-secondary-fixed": "#0f0069", "surface-container-high": "#dce9ff", "on-primary": "#ffffff", "tertiary-fixed-dim": "#68dba9", "on-surface-variant": "#45474c", "on-tertiary-container": "#24a375", "primary": "#091426", "surface-container-lowest": "#ffffff", "inverse-on-surface": "#eaf1ff", "on-surface": "#0b1c30", "inverse-surface": "#213145", "surface-dim": "#cbdbf5", "secondary": "#4b41e1", "primary-fixed": "#d8e3fb", "on-tertiary-fixed": "#002114" }, "borderRadius": { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" }, "spacing": { "margin-desktop": "1.5rem", "space-sm": "0.375rem", "space-xs": "0.25rem", "space-xl": "1.5rem", "space-md": "0.625rem", "gutter-desktop": "1rem", "margin": "0.75rem", "gutter": "0.75rem", "space-lg": "1rem" }, "fontFamily": { "headline-sm": ["Hanken Grotesk"], "body-sm": ["Hanken Grotesk"], "label-md": ["JetBrains Mono"], "headline-md": ["Hanken Grotesk"], "label-sm": ["JetBrains Mono"], "body-lg": ["Hanken Grotesk"], "body-md": ["Hanken Grotesk"], "headline-lg": ["Hanken Grotesk"], "headline-lg-mobile": ["Hanken Grotesk"], "label-lg": ["JetBrains Mono"] }, "fontSize": { "headline-sm": ["16px", { "lineHeight": "22px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "label-md": ["11px", { "lineHeight": "14px", "letterSpacing": "0.02em", "fontWeight": "500" }], "headline-md": ["20px", { "lineHeight": "26px", "letterSpacing": "-0.015em", "fontWeight": "600" }], "label-sm": ["10px", { "lineHeight": "12px", "letterSpacing": "0.04em", "fontWeight": "600" }], "body-lg": ["15px", { "lineHeight": "22px", "fontWeight": "400" }], "body-md": ["13px", { "lineHeight": "18px", "fontWeight": "400" }], "headline-lg": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "headline-lg-mobile": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "700" }], "label-lg": ["13px", { "lineHeight": "18px", "letterSpacing": "0.01em", "fontWeight": "500" }] } } } };</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-margin flex items-center justify-between gap-space-sm"><div class="flex items-center gap-space-sm min-w-0 flex-1"><img alt="OmniRetail Sync Logo" class="h-8 w-auto object-contain shrink-0" src="https://lh3.googleusercontent.com/aida/ALJJyrBActeDtpbptPS-oXZWVrakRqWjzy4Fm2sgstNQFFmEggRtbRthSaVDkr_zSh8vVZPguHlaLTx_Y_xounAypho0C_26CQdM9ZSboRWOeo2U1Z2SmreaPPSB-79mKe23fs8HteebTmtflNpJb7CpQfzeI4Nkje6SFy445cBFz9iZwZ0qgrzxAfjX6R8gKjrMDvxAhm7mUK2GRIuVqqaTuCx8PEAYfwYH6OXitbrVfPxVmg"/><div class="flex flex-col min-w-0"><div class="flex items-center gap-space-xs"><span class="font-label-sm text-label-sm text-on-surface font-semibold truncate">Flagship Soho</span><span class="font-label-sm text-label-sm text-on-surface-variant font-normal">• #01</span><span class="material-symbols-outlined text-[16px] text-on-surface-variant shrink-0">arrow_drop_down</span></div><span class="font-headline-sm text-headline-sm text-on-surface font-semibold truncate">Catalog &amp; Imports</span></div></div><div class="flex items-center gap-space-sm shrink-0"><div class="inline-flex items-center gap-space-xs px-space-sm py-space-xs rounded-full bg-surface-container-low"><span class="w-2 h-2 rounded-full bg-[#10b981] shrink-0"></span><span class="font-label-sm text-label-sm text-on-surface font-medium hidden sm:inline">Online (Synced 2m ago)</span><span class="font-label-sm text-label-sm text-on-surface font-medium sm:hidden">Synced</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full pt-16 pb-24 bg-surface min-h-screen"><div class="flex flex-col w-full">
+<!-- Operational Offline & Sync Telemetry Ribbon -->
+<div class="w-full bg-primary-container text-on-primary-container px-margin py-space-xs flex items-center justify-between shadow-sm">
+<div class="flex items-center gap-space-xs min-w-0">
+<span class="w-2 h-2 rounded-full bg-tertiary-fixed-dim animate-pulse shrink-0"></span>
+<span class="font-label-sm text-label-sm text-surface-container tracking-wider uppercase truncate">Local DB Synced</span>
+<span class="font-label-sm text-label-sm text-on-primary-container/70 hidden sm:inline">• Latency 24ms</span>
+</div>
+<div class="flex items-center gap-space-sm shrink-0">
+<span class="font-label-sm text-label-sm bg-surface/10 px-space-xs py-0.5 rounded text-surface">Batch Queue: 0</span>
+<button class="font-label-sm text-label-sm text-tertiary-fixed-dim hover:underline flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[13px]">sync</span>
+        Force
+      </button>
+</div>
+</div>
+<!-- Segmented View Switch Control -->
+<div class="px-margin pt-space-md pb-space-sm">
+<div class="bg-surface-container-high p-space-xs rounded-lg flex items-center gap-space-xs">
+<button class="flex-1 py-space-sm px-space-xs rounded-md text-center transition-all bg-surface-container-lowest text-primary shadow-sm flex items-center justify-center gap-space-xs font-headline-sm text-headline-sm" id="tab-btn-catalog" onclick="switchView('catalog')">
+<span class="material-symbols-outlined text-[18px]">table_rows</span>
+<span class="truncate">Matrix Catalog</span>
+<span class="font-label-sm text-label-sm bg-surface-container px-1.5 py-0.5 rounded-full text-on-surface-variant font-semibold">1,420</span>
+</button>
+<button class="flex-1 py-space-sm px-space-xs rounded-md text-center transition-all text-on-surface-variant hover:text-on-surface flex items-center justify-center gap-space-xs font-headline-sm text-headline-sm" id="tab-btn-import" onclick="switchView('import')">
+<span class="material-symbols-outlined text-[18px]">cloud_download</span>
+<span class="truncate">Overseas Intake</span>
+<span class="w-2 h-2 rounded-full bg-secondary shrink-0"></span>
+</button>
+</div>
+</div>
+<!-- VIEW 1: MATRIX CATALOG SECTION -->
+<div class="flex flex-col w-full px-margin pb-20 space-y-space-md" id="view-catalog">
+<!-- Fast Search & Scanner Action Bar -->
+<div class="flex flex-col gap-space-xs">
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-[18px] text-outline">search</span>
+<input class="w-full bg-surface-container-lowest text-on-surface font-label-md text-label-md pl-9 pr-20 py-2.5 rounded-lg shadow-sm focus:outline-none focus:bg-surface-container-low transition-colors" placeholder="Scan barcode or query SKU, Style..." type="text" value=""/>
+<button class="absolute right-1.5 px-space-xs py-1 rounded bg-surface-container text-on-surface font-label-sm text-label-sm flex items-center gap-1 hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[14px]">barcode_scanner</span>
+<span>Scan</span>
+</button>
+</div>
+<!-- Quick Filter Pills -->
+<div class="flex items-center gap-space-xs overflow-x-auto pb-1 -mx-margin px-margin">
+<button class="px-space-sm py-1 rounded-full bg-primary text-on-primary font-label-sm text-label-sm shrink-0 flex items-center gap-1">
+          All Styles
+        </button>
+<button class="px-space-sm py-1 rounded-full bg-surface-container-high text-on-surface font-label-sm text-label-sm shrink-0 flex items-center gap-1 hover:bg-surface-container-highest transition-colors">
+          Outerwear (18)
+        </button>
+<button class="px-space-sm py-1 rounded-full bg-surface-container-high text-on-surface font-label-sm text-label-sm shrink-0 flex items-center gap-1 hover:bg-surface-container-highest transition-colors">
+          Footwear (42)
+        </button>
+<button class="px-space-sm py-1 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm font-semibold shrink-0 flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">warning</span>
+          Low Stock / Mismatch (3)
+        </button>
+</div>
+</div>
+<!-- Style Matrix Cards -->
+<!-- Style Row 1: Overland Tech Trench Coat (EXPANDED BY DEFAULT) -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden flex flex-col">
+<!-- Style Header Row -->
+<div class="p-space-sm flex items-start gap-space-sm bg-surface-container-low">
+<div class="w-14 h-14 rounded-lg overflow-hidden shrink-0 bg-surface-container shadow-inner">
+<img class="w-full h-full object-cover" data-alt="Technical urban trench coat in dark matte black fabric with water resistant zipper detailing, styled on a minimalist hanger against a pale cool grey studio background with soft directional retail lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDvj0_qDuizD0CgAaPfIf37r9QnzqMVhVke5q0Kq2zWu-z_bc21sTleKj6Dp57j0A8jPl5Bo1t1kqNVGQ-mCzA0SZP2wpSQu0QS2dMMEw3n69GVBg9ms-cGCY27S_stbsHZICu5R4Skt1ADwq8-Wvk8dDyMRRyMZNGXKIuXcd6s2-o2taF_IKJHic3E_2N0BZ2b_Es78FaCOlSv__BNZ74jrXjqL02p05rhC-KrDFA8"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between gap-space-xs">
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold truncate">Overland Tech Trench Coat</span>
+<span class="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-surface-container-highest text-on-surface font-mono shrink-0">STY-8921</span>
+</div>
+<div class="flex items-center gap-space-xs mt-0.5 flex-wrap">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Batch: CN-2024-B8</span>
+<span class="text-outline text-[10px]">•</span>
+<span class="font-label-sm text-label-sm text-secondary font-medium">4 Active SKUs</span>
+<span class="text-outline text-[10px]">•</span>
+<span class="font-label-sm text-label-sm text-error font-semibold flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[12px]">flag</span> Discrepancy (1)
+            </span>
+</div>
+</div>
+<button class="p-1 rounded bg-surface-container hover:bg-surface-container-high transition-colors text-on-surface-variant" onclick="toggleExpand('style-1-drawer', this)">
+<span class="material-symbols-outlined text-[20px] transition-transform rotate-180" id="drawer-icon-1">expand_more</span>
+</button>
+</div>
+<!-- Expandable SKU Table Drawer -->
+<div class="flex flex-col bg-surface-container-lowest" id="style-1-drawer">
+<!-- Variant SKU 1: OTT-BLK-M -->
+<div class="p-space-sm bg-surface-container-lowest flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs min-w-0">
+<span class="w-2.5 h-2.5 rounded-full bg-[#111827] shrink-0" title="Matte Black"></span>
+<span class="font-label-md text-label-md font-bold text-on-surface font-mono truncate">OTT-BLK-M</span>
+<span class="font-label-sm text-label-sm px-1 rounded bg-surface-container text-on-surface-variant">Size M</span>
+</div>
+<div class="flex items-center gap-space-sm shrink-0">
+<span class="font-label-md text-label-md text-on-surface font-mono font-semibold">$185.00</span>
+<button class="px-space-xs py-1 rounded bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-label-sm text-label-sm flex items-center gap-0.5 transition-colors" onclick="openTransferModal('OTT-BLK-M', 'Overland Tech Trench', 'M / Black', 14, 140)">
+<span class="material-symbols-outlined text-[13px]">swap_horiz</span>
+                Transfer
+              </button>
+</div>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-label-sm text-label-sm text-outline font-mono">BC: 7934810291</span>
+<div class="flex items-center gap-space-xs">
+<span class="font-label-sm text-label-sm bg-surface-container px-1.5 py-0.5 rounded text-on-surface">SoHo: <strong class="font-mono text-tertiary-container text-tertiary-fixed font-bold">14</strong></span>
+<span class="font-label-sm text-label-sm bg-surface-container px-1.5 py-0.5 rounded text-on-surface">BK: <strong class="font-mono">8</strong></span>
+<span class="font-label-sm text-label-sm bg-surface-container px-1.5 py-0.5 rounded text-on-surface">WH: <strong class="font-mono">140</strong></span>
+</div>
+</div>
+</div>
+<div class="h-[1px] w-full bg-surface-container"></div>
+<!-- Variant SKU 2: OTT-BLK-L (Discrepancy Alert) -->
+<div class="p-space-sm bg-error-container/15 flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs min-w-0">
+<span class="w-2.5 h-2.5 rounded-full bg-[#111827] shrink-0" title="Matte Black"></span>
+<span class="font-label-md text-label-md font-bold text-on-surface font-mono truncate">OTT-BLK-L</span>
+<span class="font-label-sm text-label-sm px-1 rounded bg-surface-container text-on-surface-variant">Size L</span>
+<span class="font-label-sm text-label-sm px-1.5 py-0.2 rounded-full bg-error-container text-on-error-container font-semibold uppercase tracking-wider">
+                MISMATCH
+              </span>
+</div>
+<div class="flex items-center gap-space-sm shrink-0">
+<span class="font-label-md text-label-md text-on-surface font-mono font-semibold">$185.00</span>
+<button class="px-space-xs py-1 rounded bg-error text-on-error font-label-sm text-label-sm flex items-center gap-0.5 shadow-sm" onclick="openTransferModal('OTT-BLK-L', 'Overland Tech Trench', 'L / Black', -1, 88)">
+<span class="material-symbols-outlined text-[13px]">bolt</span>
+                Reconcile
+              </button>
+</div>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-label-sm text-label-sm text-outline font-mono">BC: 7934810292</span>
+<div class="flex items-center gap-space-xs">
+<span class="font-label-sm text-label-sm bg-error-container text-on-error-container px-1.5 py-0.5 rounded font-bold font-mono">SoHo: -1</span>
+<span class="font-label-sm text-label-sm bg-surface-container px-1.5 py-0.5 rounded text-on-surface">BK: <strong class="font-mono">4</strong></span>
+<span class="font-label-sm text-label-sm bg-surface-container px-1.5 py-0.5 rounded text-on-surface">WH: <strong class="font-mono">88</strong></span>
+</div>
+</div>
+</div>
+<div class="h-[1px] w-full bg-surface-container"></div>
+<!-- Variant SKU 3: OTT-KHK-M -->
+<div class="p-space-sm bg-surface-container-lowest flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs min-w-0">
+<span class="w-2.5 h-2.5 rounded-full bg-[#c2b280] shrink-0" title="Khaki Stone"></span>
+<span class="font-label-md text-label-md font-bold text-on-surface font-mono truncate">OTT-KHK-M</span>
+<span class="font-label-sm text-label-sm px-1 rounded bg-surface-container text-on-surface-variant">Size M</span>
+</div>
+<div class="flex items-center gap-space-sm shrink-0">
+<span class="font-label-md text-label-md text-on-surface font-mono font-semibold">$185.00</span>
+<button class="px-space-xs py-1 rounded bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-label-sm text-label-sm flex items-center gap-0.5 transition-colors" onclick="openTransferModal('OTT-KHK-M', 'Overland Tech Trench', 'M / Khaki', 22, 210)">
+<span class="material-symbols-outlined text-[13px]">swap_horiz</span>
+                Transfer
+              </button>
+</div>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-label-sm text-label-sm text-outline font-mono">BC: 7934810295</span>
+<div class="flex items-center gap-space-xs">
+<span class="font-label-sm text-label-sm bg-surface-container px-1.5 py-0.5 rounded text-on-surface">SoHo: <strong class="font-mono">22</strong></span>
+<span class="font-label-sm text-label-sm bg-surface-container px-1.5 py-0.5 rounded text-on-surface">BK: <strong class="font-mono">19</strong></span>
+<span class="font-label-sm text-label-sm bg-surface-container px-1.5 py-0.5 rounded text-on-surface">WH: <strong class="font-mono">210</strong></span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Style Row 2: Aeroknit Performance Runner (Collapsed) -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden flex flex-col">
+<div class="p-space-sm flex items-start gap-space-sm bg-surface-container-low">
+<div class="w-14 h-14 rounded-lg overflow-hidden shrink-0 bg-surface-container shadow-inner">
+<img class="w-full h-full object-cover" data-alt="Futuristic low-top lightweight mesh running sneaker in crisp slate white and deep navy accents, displayed on a clean studio plinth with sharp studio rim light highlighting textures." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDcyosKRASZPDw_GIDhzdSDvc-EvWkUOe47y15Rg-ImZgEhv_41tEiYNRfPzpETMdSzS2-r39_imdW4lp_PC-EQ9X6pZEEh3-KHY-F-DjKdre9yuv55XLblgM-_4bLJZrPHwTnFGlSwOrIj6lrAil4iHOBXRTxz2lcjAthOPWXDVA9UZCpH1DZDL_shF4yHZGA0qgqZfo4lmqHmwDblcfu_Ze1XplLTB791K5prZVpg"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between gap-space-xs">
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold truncate">Aeroknit Performance Runner</span>
+<span class="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-surface-container-highest text-on-surface font-mono shrink-0">STY-4402</span>
+</div>
+<div class="flex items-center gap-space-xs mt-0.5 flex-wrap">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Category: Footwear</span>
+<span class="text-outline text-[10px]">•</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">6 Variants</span>
+<span class="text-outline text-[10px]">•</span>
+<span class="font-label-sm text-label-sm font-semibold text-tertiary-container font-mono">Stock: 412 pairs</span>
+</div>
+</div>
+<button class="p-1 rounded bg-surface-container hover:bg-surface-container-high transition-colors text-on-surface-variant" onclick="toggleExpand('style-2-drawer', this)">
+<span class="material-symbols-outlined text-[20px] transition-transform" id="drawer-icon-2">expand_more</span>
+</button>
+</div>
+<!-- Collapsed Drawer (Hidden initially) -->
+<div class="hidden flex-col bg-surface-container-lowest" id="style-2-drawer">
+<div class="p-space-sm bg-surface-container-lowest flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="font-label-md text-label-md font-mono font-bold text-on-surface">AKR-09-NAV</span>
+<span class="font-label-sm text-label-sm px-1 rounded bg-surface-container text-on-surface-variant">Size 9.0</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface font-mono">SoHo: 32 • WH: 180</span>
+</div>
+<div class="h-[1px] w-full bg-surface-container"></div>
+<div class="p-space-sm bg-surface-container-lowest flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="font-label-md text-label-md font-mono font-bold text-on-surface">AKR-10-NAV</span>
+<span class="font-label-sm text-label-sm px-1 rounded bg-surface-container text-on-surface-variant">Size 10.0</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface font-mono">SoHo: 48 • WH: 152</span>
+</div>
+</div>
+</div>
+</div>
+<!-- VIEW 2: BULK OVERSEAS IMPORT SECTION -->
+<div class="hidden flex-col w-full px-margin pb-24 space-y-space-md" id="view-import">
+<!-- Active Manifest Upload / Ingestion Hero Tile -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-[20px]">directions_boat</span>
+<span class="font-headline-sm text-headline-sm text-on-surface font-bold">Overseas Air &amp; Ocean Intake</span>
+</div>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-semibold font-mono">PORT: NEWARK</span>
+</div>
+<!-- Drag & Tap Upload Droplet Area -->
+<div class="bg-surface-container-low rounded-lg p-space-lg flex flex-col items-center justify-center text-center cursor-pointer transition-all hover:bg-surface-container">
+<div class="w-12 h-12 rounded-full bg-surface-container-highest flex items-center justify-center mb-space-xs text-secondary">
+<span class="material-symbols-outlined text-[26px]">upload_file</span>
+</div>
+<span class="font-headline-sm text-headline-sm text-on-surface font-medium">Tap to replace or upload shipping manifest</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Supports standard .xlsx, .csv logistics interchange matrices</span>
+<!-- Active File Loaded Chip -->
+<div class="mt-space-sm inline-flex items-center gap-space-xs bg-surface-container-lowest px-space-sm py-1 rounded shadow-sm">
+<span class="material-symbols-outlined text-[16px] text-tertiary-container">table_view</span>
+<span class="font-label-md text-label-md font-mono text-on-surface font-bold">Container CA-9024 Manifest.xlsx</span>
+<span class="font-label-sm text-label-sm text-outline-variant font-mono">(1.4 MB)</span>
+<span class="material-symbols-outlined text-[14px] text-error cursor-pointer">close</span>
+</div>
+</div>
+<!-- Parsing & Validation Live Status Card -->
+<div class="bg-surface-container p-space-sm rounded-lg flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[16px] text-[#10b981]">check_circle</span>
+<span class="font-label-md text-label-md font-bold text-on-surface">Data Integrity Validated</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Parser Engine v4.2</span>
+</div>
+<div class="grid grid-cols-3 gap-space-xs mt-1">
+<div class="bg-surface-container-lowest p-space-xs rounded flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Styles Parsed</span>
+<span class="font-headline-md text-headline-md font-bold text-on-surface font-mono">124</span>
+</div>
+<div class="bg-surface-container-lowest p-space-xs rounded flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Variants Valid</span>
+<span class="font-headline-md text-headline-md font-bold text-secondary font-mono">480</span>
+</div>
+<div class="bg-surface-container-lowest p-space-xs rounded flex flex-col">
+<span class="font-label-sm text-label-sm text-error uppercase">SKU Warnings</span>
+<span class="font-headline-md text-headline-md font-bold text-error font-mono flex items-center gap-1">
+              2
+              <span class="material-symbols-outlined text-[14px]">warning</span>
+</span>
+</div>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+<span class="font-semibold text-error">Warning flag:</span> Barcode collision on SKU <code class="font-mono text-error font-bold">ARC-8012-L</code> with legacy autumn archive. Resolved by mapping new suffix <code class="font-mono text-secondary font-bold">-V2</code>.
+        </p>
+</div>
+</div>
+<!-- Parsed Variant Preview Matrix -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden flex flex-col">
+<div class="p-space-sm bg-surface-container-low flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">preview</span>
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold">Incoming Matrix Preview</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Showing 3 of 480</span>
+</div>
+<!-- Compact Data Table -->
+<div class="w-full overflow-x-auto">
+<table class="w-full text-left font-label-md text-label-md">
+<thead class="bg-surface-container text-on-surface-variant text-[10px] tracking-wider uppercase font-mono">
+<tr>
+<th class="py-2 px-space-sm font-semibold">Import SKU</th>
+<th class="py-2 px-space-xs font-semibold">Style Name</th>
+<th class="py-2 px-space-xs font-semibold">Cat/Size</th>
+<th class="py-2 px-space-xs font-semibold text-right">Landed Cost</th>
+<th class="py-2 px-space-xs font-semibold text-right">MSRP</th>
+<th class="py-2 px-space-sm font-semibold text-right">Qty</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container text-on-surface font-mono">
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-2 px-space-sm font-bold text-secondary truncate max-w-[90px]">FLC-WTR-S</td>
+<td class="py-2 px-space-xs font-body-sm text-body-sm truncate max-w-[100px]">Alpine Polar Fleece</td>
+<td class="py-2 px-space-xs text-on-surface-variant">Out / S</td>
+<td class="py-2 px-space-xs text-right text-on-surface-variant">$28.40</td>
+<td class="py-2 px-space-xs text-right font-semibold">$110.00</td>
+<td class="py-2 px-space-sm text-right font-bold text-tertiary-container">80</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-2 px-space-sm font-bold text-secondary truncate max-w-[90px]">FLC-WTR-M</td>
+<td class="py-2 px-space-xs font-body-sm text-body-sm truncate max-w-[100px]">Alpine Polar Fleece</td>
+<td class="py-2 px-space-xs text-on-surface-variant">Out / M</td>
+<td class="py-2 px-space-xs text-right text-on-surface-variant">$28.40</td>
+<td class="py-2 px-space-xs text-right font-semibold">$110.00</td>
+<td class="py-2 px-space-sm text-right font-bold text-tertiary-container">120</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-2 px-space-sm font-bold text-secondary truncate max-w-[90px]">WND-BRK-XL</td>
+<td class="py-2 px-space-xs font-body-sm text-body-sm truncate max-w-[100px]">Storm Shell Jacket</td>
+<td class="py-2 px-space-xs text-on-surface-variant">Out / XL</td>
+<td class="py-2 px-space-xs text-right text-on-surface-variant">$34.10</td>
+<td class="py-2 px-space-xs text-right font-semibold">$145.00</td>
+<td class="py-2 px-space-sm text-right font-bold text-tertiary-container">65</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Store Auto-Allocation Breakdown Summary -->
+<div class="p-space-sm bg-surface-container flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Auto-Alloc: SoHo (30%), BK (20%), WH Newark (50%)</span>
+<button class="font-label-sm text-label-sm text-secondary font-bold hover:underline">Edit Split</button>
+</div>
+</div>
+<!-- Bulk Intake Execution Action Card -->
+<div class="bg-primary text-on-primary rounded-xl p-space-md shadow-md flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[20px] text-tertiary-fixed">cloud_sync</span>
+<span class="font-headline-sm text-headline-sm font-semibold">Ready for Global Dispatch</span>
+</div>
+<span class="font-label-sm text-label-sm bg-primary-container px-2 py-0.5 rounded text-surface">4 Locations</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-primary-container">
+        Executing will commit landed cost ledgers, spawn barcode lookup index caches, and notify SoHo &amp; Brooklyn inbound receivers.
+      </p>
+<button class="w-full h-11 bg-secondary text-on-secondary rounded-lg font-headline-sm text-headline-sm font-semibold flex items-center justify-center gap-space-xs shadow-md active:opacity-90 transition-all" onclick="triggerImportAnimation(this)">
+<span class="material-symbols-outlined text-[20px]">send</span>
+<span>Import &amp; Sync to 4 Stores (480 Variants)</span>
+</button>
+</div>
+</div>
+<!-- FLOATING QUICK TRANSFER MODAL / BOTTOM DRAWER -->
+<div class="fixed inset-0 z-50 bg-primary/40 backdrop-blur-sm hidden flex-col justify-end" id="transfer-modal">
+<div class="bg-surface-container-lowest rounded-t-2xl shadow-xl w-full max-w-lg mx-auto p-space-lg flex flex-col gap-space-sm animate-in fade-in slide-in-from-bottom duration-200">
+<!-- Modal Header -->
+<div class="flex items-center justify-between pb-space-xs">
+<div class="flex items-center gap-space-xs">
+<div class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">swap_horiz</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">Transfer Stock Slip</h3>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-mono" id="modal-sku-subtitle">SKU: OTT-BLK-M</span>
+</div>
+</div>
+<button class="w-8 h-8 rounded-full bg-surface-container hover:bg-surface-container-high flex items-center justify-center text-on-surface-variant" onclick="closeTransferModal()">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<!-- Item Snapshot -->
+<div class="bg-surface-container-low p-space-sm rounded-lg flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold" id="modal-style-title">Overland Tech Trench</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant" id="modal-variant-spec">M / Matte Black</span>
+</div>
+<div class="text-right">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Current SoHo</span>
+<div class="font-headline-sm text-headline-sm font-bold font-mono text-on-surface" id="modal-current-stock">14 units</div>
+</div>
+</div>
+<!-- Routing Nodes Matrix -->
+<div class="grid grid-cols-2 gap-space-xs">
+<div class="bg-surface-container p-space-xs rounded-lg flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">From Source</span>
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold truncate">Warehouse Newark</span>
+<span class="font-label-sm text-label-sm text-tertiary-container font-mono" id="modal-wh-stock">Avail: 140 units</span>
+</div>
+<div class="bg-surface-container p-space-xs rounded-lg flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Destination</span>
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold truncate">Store #01 SoHo</span>
+<span class="font-label-sm text-label-sm text-secondary font-mono font-semibold">Restock Target</span>
+</div>
+</div>
+<!-- Quantity Step Input -->
+<div class="flex flex-col gap-space-xs">
+<label class="font-label-md text-label-md text-on-surface font-semibold">Quantity to Dispatch</label>
+<div class="flex items-center gap-space-xs">
+<button class="w-11 h-11 rounded-lg bg-surface-container hover:bg-surface-container-high flex items-center justify-center text-on-surface font-bold text-headline-sm" onclick="adjustQty(-5)">-5</button>
+<button class="w-11 h-11 rounded-lg bg-surface-container hover:bg-surface-container-high flex items-center justify-center text-on-surface font-bold text-headline-sm" onclick="adjustQty(-1)">-1</button>
+<input class="flex-1 h-11 bg-surface-container-lowest text-center font-headline-md text-headline-md font-bold font-mono text-on-surface rounded-lg shadow-sm focus:bg-surface-container-low focus:outline-none" id="transfer-qty-input" type="number" value="10"/>
+<button class="w-11 h-11 rounded-lg bg-surface-container hover:bg-surface-container-high flex items-center justify-center text-on-surface font-bold text-headline-sm" onclick="adjustQty(1)">+1</button>
+<button class="w-11 h-11 rounded-lg bg-surface-container hover:bg-surface-container-high flex items-center justify-center text-on-surface font-bold text-headline-sm" onclick="adjustQty(5)">+5</button>
+</div>
+</div>
+<!-- Transfer Reason Presets -->
+<div class="flex flex-col gap-space-xs">
+<label class="font-label-md text-label-md text-on-surface font-semibold">Dispatch Ledger Reason</label>
+<div class="grid grid-cols-3 gap-space-xs">
+<button class="transfer-reason-btn px-space-xs py-1.5 rounded-lg bg-surface-container text-on-surface font-label-sm text-label-sm font-medium transition-colors text-center truncate bg-primary text-on-primary" onclick="selectReason(this)" type="button">
+            Store Restock
+          </button>
+<button class="transfer-reason-btn px-space-xs py-1.5 rounded-lg bg-surface-container text-on-surface font-label-sm text-label-sm font-medium transition-colors text-center truncate" onclick="selectReason(this)" type="button">
+            Reconcile
+          </button>
+<button class="transfer-reason-btn px-space-xs py-1.5 rounded-lg bg-surface-container text-on-surface font-label-sm text-label-sm font-medium transition-colors text-center truncate" onclick="selectReason(this)" type="button">
+            Client Order
+          </button>
+</div>
+</div>
+<!-- Action Confirmation Buttons -->
+<div class="flex items-center gap-space-xs pt-space-xs">
+<button class="flex-1 h-11 rounded-lg bg-surface-container text-on-surface font-headline-sm text-headline-sm font-medium hover:bg-surface-container-high transition-colors" onclick="closeTransferModal()">
+          Cancel
+        </button>
+<button class="flex-2 w-2/3 h-11 rounded-lg bg-primary text-on-primary font-headline-sm text-headline-sm font-semibold flex items-center justify-center gap-space-xs shadow-md active:opacity-90" onclick="executeTransfer()">
+<span class="material-symbols-outlined text-[18px]">local_shipping</span>
+<span>Create Transfer Slip</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Inline Micro-interactions Script -->
+<script>
+    function switchView(viewName) {
+      const catalogView = document.getElementById('view-catalog');
+      const importView = document.getElementById('view-import');
+      const btnCatalog = document.getElementById('tab-btn-catalog');
+      const btnImport = document.getElementById('tab-btn-import');
+
+      if (viewName === 'catalog') {
+        catalogView.classList.remove('hidden');
+        importView.classList.add('hidden');
+        btnCatalog.className = 'flex-1 py-space-sm px-space-xs rounded-md text-center transition-all bg-surface-container-lowest text-primary shadow-sm flex items-center justify-center gap-space-xs font-headline-sm text-headline-sm';
+        btnImport.className = 'flex-1 py-space-sm px-space-xs rounded-md text-center transition-all text-on-surface-variant hover:text-on-surface flex items-center justify-center gap-space-xs font-headline-sm text-headline-sm';
+      } else {
+        catalogView.classList.add('hidden');
+        importView.classList.remove('hidden');
+        btnImport.className = 'flex-1 py-space-sm px-space-xs rounded-md text-center transition-all bg-surface-container-lowest text-primary shadow-sm flex items-center justify-center gap-space-xs font-headline-sm text-headline-sm';
+        btnCatalog.className = 'flex-1 py-space-sm px-space-xs rounded-md text-center transition-all text-on-surface-variant hover:text-on-surface flex items-center justify-center gap-space-xs font-headline-sm text-headline-sm';
+      }
+    }
+
+    function toggleExpand(drawerId, triggerBtn) {
+      const drawer = document.getElementById(drawerId);
+      const icon = triggerBtn.querySelector('.material-symbols-outlined');
+      if (drawer.classList.contains('hidden')) {
+        drawer.classList.remove('hidden');
+        icon.classList.add('rotate-180');
+      } else {
+        drawer.classList.add('hidden');
+        icon.classList.remove('rotate-180');
+      }
+    }
+
+    function openTransferModal(sku, style, variant, curSoho, whStock) {
+      document.getElementById('modal-sku-subtitle').innerText = 'SKU: ' + sku;
+      document.getElementById('modal-style-title').innerText = style;
+      document.getElementById('modal-variant-spec').innerText = variant;
+      document.getElementById('modal-current-stock').innerText = curSoho + ' units';
+      document.getElementById('modal-wh-stock').innerText = 'Avail: ' + whStock + ' units';
+      
+      const modal = document.getElementById('transfer-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeTransferModal() {
+      const modal = document.getElementById('transfer-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function adjustQty(amount) {
+      const input = document.getElementById('transfer-qty-input');
+      let val = parseInt(input.value) || 0;
+      val = Math.max(1, val + amount);
+      input.value = val;
+    }
+
+    function selectReason(btn) {
+      document.querySelectorAll('.transfer-reason-btn').forEach(b => {
+        b.className = 'transfer-reason-btn px-space-xs py-1.5 rounded-lg bg-surface-container text-on-surface font-label-sm text-label-sm font-medium transition-colors text-center truncate';
+      });
+      btn.className = 'transfer-reason-btn px-space-xs py-1.5 rounded-lg bg-primary text-on-primary font-label-sm text-label-sm font-medium transition-colors text-center truncate';
+    }
+
+    function executeTransfer() {
+      const qty = document.getElementById('transfer-qty-input').value;
+      alert('Transfer request for ' + qty + ' units logged to Offline Queue. Will sync on next sync interval.');
+      closeTransferModal();
+    }
+
+    function triggerImportAnimation(btn) {
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<span class="material-symbols-outlined text-[20px] animate-spin">refresh</span> Dispatching 480 Variants...';
+      btn.disabled = true;
+      setTimeout(() => {
+        btn.innerHTML = '<span class="material-symbols-outlined text-[20px]">done_all</span> Synced Successfully!';
+        btn.classList.remove('bg-secondary');
+        btn.classList.add('bg-[#10b981]');
+        setTimeout(() => {
+          btn.innerHTML = originalText;
+          btn.classList.remove('bg-[#10b981]');
+          btn.classList.add('bg-secondary');
+          btn.disabled = false;
+        }, 2200);
+      }, 1500);
+    }
+  </script>
+</div></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-1px_8px_rgba(0,0,0,0.04)]" data-active-classes="text-secondary font-semibold"><div class="flex items-center justify-around h-16 px-space-xs"><a class="flex flex-col items-center justify-center min-w-[64px] min-h-[44px] text-on-surface-variant hover:text-on-surface transition-colors" data-path="analytics" href="#"><span class="material-symbols-outlined text-[22px]">dashboard</span><span class="font-label-sm text-label-sm mt-space-xs">Analytics</span></a><a class="flex flex-col items-center justify-center min-w-[64px] min-h-[44px] text-on-surface-variant hover:text-on-surface transition-colors" data-path="catalog-and-imports" href="#"><span class="material-symbols-outlined text-[22px]">inventory_2</span><span class="font-label-sm text-label-sm mt-space-xs">Catalog</span></a><a class="flex flex-col items-center justify-center min-w-[64px] min-h-[44px] text-on-surface-variant hover:text-on-surface transition-colors relative" data-path="pos-terminal" href="#"><div class="relative flex items-center justify-center"><span class="material-symbols-outlined text-[22px]">barcode_scanner</span><span class="absolute -top-1 -right-2 px-1 py-0.5 rounded-full bg-secondary text-on-secondary font-label-sm text-[8px] leading-tight font-bold">POS</span></div><span class="font-label-sm text-label-sm mt-space-xs">Terminal</span></a><a class="flex flex-col items-center justify-center min-w-[64px] min-h-[44px] text-on-surface-variant hover:text-on-surface transition-colors" data-path="stock-ledger" href="#"><span class="material-symbols-outlined text-[22px]">receipt_long</span><span class="font-label-sm text-label-sm mt-space-xs">Ledger</span></a></div></nav></body></html>

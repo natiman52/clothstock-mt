@@ -1,0 +1,592 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><meta content="web_dashboard" name="shell-type"><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,300..900;1,300..900&amp;family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"error-container":"#ffdad6","outline-variant":"#c5c6cd","on-error":"#ffffff","background":"#f8f9ff","on-primary":"#ffffff","tertiary":"#00190e","inverse-on-surface":"#eaf1ff","tertiary-fixed-dim":"#68dba9","tertiary-fixed":"#85f8c4","primary-fixed":"#d8e3fb","secondary-fixed":"#e2dfff","surface-container-high":"#dce9ff","secondary-container":"#645efb","primary-fixed-dim":"#bcc7de","on-surface-variant":"#45474c","surface-container-lowest":"#ffffff","on-secondary-fixed":"#0f0069","surface-bright":"#f8f9ff","error":"#ba1a1a","surface-container":"#e5eeff","on-background":"#0b1c30","surface-container-low":"#eff4ff","on-tertiary":"#ffffff","on-error-container":"#93000a","inverse-surface":"#213145","on-secondary-fixed-variant":"#3323cc","on-surface":"#0b1c30","on-primary-fixed-variant":"#3c475a","surface-dim":"#cbdbf5","on-primary-container":"#8590a6","on-secondary":"#ffffff","secondary":"#4b41e1","on-tertiary-container":"#24a375","outline":"#75777d","on-tertiary-fixed":"#002114","secondary-fixed-dim":"#c3c0ff","on-secondary-container":"#fffbff","on-tertiary-fixed-variant":"#005137","inverse-primary":"#bcc7de","tertiary-container":"#00301f","surface-container-highest":"#d3e4fe","surface-tint":"#545f73","primary-container":"#1e293b","primary":"#091426","on-primary-fixed":"#111c2d","surface-variant":"#d3e4fe","surface":"#f8f9ff"},borderRadius:{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},spacing:{"space-md":"0.625rem","space-sm":"0.375rem","space-xs":"0.25rem","margin-desktop":"1.5rem","space-lg":"1rem","space-xl":"1.5rem","margin":"0.75rem","gutter":"0.75rem","gutter-desktop":"1rem"},fontFamily:{"body-sm":["Hanken Grotesk"],"headline-sm":["Hanken Grotesk"],"body-md":["Hanken Grotesk"],"headline-md":["Hanken Grotesk"],"label-lg":["JetBrains Mono"],"headline-lg-mobile":["Hanken Grotesk"],"body-lg":["Hanken Grotesk"],"label-md":["JetBrains Mono"],"label-sm":["JetBrains Mono"],"headline-lg":["Hanken Grotesk"]},fontSize:{"body-sm":["12px",{"lineHeight":"16px","fontWeight":"400"}],"headline-sm":["16px",{"lineHeight":"22px","letterSpacing":"-0.01em","fontWeight":"600"}],"body-md":["13px",{"lineHeight":"18px","fontWeight":"400"}],"headline-md":["20px",{"lineHeight":"26px","letterSpacing":"-0.015em","fontWeight":"600"}],"label-lg":["13px",{"lineHeight":"18px","letterSpacing":"0.01em","fontWeight":"500"}],"headline-lg-mobile":["22px",{"lineHeight":"28px","letterSpacing":"-0.01em","fontWeight":"700"}],"body-lg":["15px",{"lineHeight":"22px","fontWeight":"400"}],"label-md":["11px",{"lineHeight":"14px","letterSpacing":"0.02em","fontWeight":"500"}],"label-sm":["10px",{"lineHeight":"12px","letterSpacing":"0.04em","fontWeight":"600"}],"headline-lg":["28px",{"lineHeight":"34px","letterSpacing":"-0.02em","fontWeight":"700"}]}}}}</script></head><body class="bg-surface font-body-md text-body-md text-on-surface antialiased"><aside class="fixed left-0 top-0 h-full w-64 bg-surface-container-lowest border-r border-outline-variant/30 z-50 flex flex-col justify-between select-none"><div class="flex flex-col"><div class="h-14 px-space-lg flex items-center justify-between border-b border-outline-variant/30 bg-surface-container-low"><div class="flex items-center gap-space-sm"><div class="w-7 h-7 rounded bg-primary flex items-center justify-center text-on-primary"><span class="material-symbols-outlined text-[18px]">inventory_2</span></div><div class="flex flex-col"><span class="font-headline-sm text-headline-sm tracking-tight text-primary leading-none">SYNCRA</span><span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Retail Grid</span></div></div><span class="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant border border-outline-variant/40">v4.2</span></div><div class="px-space-md py-space-sm"><div class="px-space-sm pb-space-xs"><span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Workspace</span></div><nav class="flex flex-col gap-0.5" data-active-classes="bg-primary text-on-primary font-semibold shadow-sm"><a class="flex items-center justify-between px-space-sm py-2 rounded text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors" data-path="analytics" href="#"><div class="flex items-center gap-2.5"><span class="material-symbols-outlined text-[18px]">analytics</span><span class="font-body-md text-body-md">Analytics</span></div></a><a class="flex items-center justify-between px-space-sm py-2 rounded text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors" data-path="catalog-and-imports" href="#"><div class="flex items-center gap-2.5"><span class="material-symbols-outlined text-[18px]">dataset</span><span class="font-body-md text-body-md">Catalog &amp; Imports</span></div><span class="font-label-sm text-label-sm text-outline">SKU</span></a><a aria-current="page" class="flex items-center justify-between px-space-sm py-2 rounded transition-colors bg-primary text-on-primary font-semibold shadow-sm" data-path="pos-terminal" href="#"><div class="flex items-center gap-2.5"><span class="material-symbols-outlined text-[18px]">point_of_sale</span><span class="font-body-md text-body-md">POS Terminal</span></div><span class="w-2 h-2 rounded-full bg-tertiary-fixed-variant"></span></a><a class="flex items-center justify-between px-space-sm py-2 rounded text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors" data-path="stock-ledger" href="#"><div class="flex items-center gap-2.5"><span class="material-symbols-outlined text-[18px]">table_chart</span><span class="font-body-md text-body-md">Stock Ledger</span></div></a><a class="flex items-center justify-between px-space-sm py-2 rounded text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors" data-path="user-management" href="#"><div class="flex items-center gap-2.5"><span class="material-symbols-outlined text-[18px]">manage_accounts</span><span class="font-body-md text-body-md">User Management</span></div><span class="font-label-sm text-label-sm bg-secondary-fixed text-on-secondary-fixed px-1.5 py-0.5 rounded font-medium">Admin</span></a></nav></div></div><div class="p-space-md border-t border-outline-variant/30 bg-surface-container-lowest flex flex-col gap-space-sm"><div class="flex items-center justify-between px-space-xs"><div class="flex items-center gap-2"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div><div class="flex flex-col min-w-0"><span class="font-headline-sm text-[13px] leading-tight text-on-surface truncate">Devon Vance</span><span class="font-label-sm text-label-sm text-outline uppercase">System Admin</span></div></div><a class="p-1 text-on-surface-variant hover:text-error transition-colors rounded" data-path="login" href="#" title="Sign Out"><span class="material-symbols-outlined text-[18px]">logout</span></a></div><div class="flex items-center justify-between pt-space-xs border-t border-outline-variant/20 px-space-xs text-outline font-label-sm text-label-sm"><span>STORE #101 TERMINAL</span><span class="text-on-tertiary-container font-medium">CLOUD ONLINE</span></div></div></aside><div class="pl-64 flex flex-col min-h-screen"><header class="fixed top-0 left-64 right-0 h-14 bg-surface-container-lowest/95 backdrop-blur border-b border-outline-variant/30 z-40 px-space-lg flex items-center justify-between"><div class="flex items-center gap-space-lg"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-on-surface-variant text-[18px]">store</span><div class="relative"><select aria-label="Active Store Location" class="bg-surface-container-low border border-outline-variant/40 rounded py-1 pl-2.5 pr-7 font-headline-sm text-body-md text-on-surface appearance-none focus:outline-none focus:border-secondary transition-colors cursor-pointer"><option value="loc-101">Store #101 - Downtown Flagship</option><option value="loc-102">Store #102 - Uptown Outlet</option><option value="loc-103">Store #103 - Metro Hub Logistics</option><option value="loc-104">Store #104 - Suburban Retail Center</option></select><span class="material-symbols-outlined text-on-surface-variant text-[16px] absolute right-2 top-2 pointer-events-none">expand_more</span></div></div><div class="h-4 w-px bg-outline-variant/40"></div><div class="flex items-center gap-2 font-label-md text-label-md text-on-surface-variant"><span class="material-symbols-outlined text-[16px] text-tertiary-fixed-dim">cloud_done</span><span class="font-medium text-on-surface">Cloud Connected • Store #101</span></div></div><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-sm px-2.5 py-1 rounded bg-surface-container-low border border-outline-variant/30"><span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-tertiary-fixed-dim opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-on-tertiary-container"></span></span><span class="font-label-md text-label-md font-medium text-on-surface">Live Cloud Sync</span><span class="text-outline-variant font-label-md">•</span><span class="font-label-sm text-label-sm text-on-tertiary-container font-mono font-semibold">REALTIME</span></div><div class="flex items-center gap-1.5 font-label-sm text-label-sm text-outline"><span class="material-symbols-outlined text-[16px] text-tertiary-fixed-dim">wifi</span><span>Latency: 18ms</span></div><button class="p-1.5 rounded hover:bg-surface-container hover:text-on-surface text-on-surface-variant transition-colors" title="Trigger Manual Sync" type="button"><span class="material-symbols-outlined text-[18px]">refresh</span></button></div></header><main class="w-full pt-14 flex-1 bg-surface"><div class="flex flex-col w-full">
+<!-- System / Hardware Status Banner -->
+<div class="bg-primary-container text-on-primary-container px-gutter-desktop py-space-xs flex flex-wrap items-center justify-between shadow-sm"><div class="flex items-center gap-space-lg flex-wrap"><div class="flex items-center gap-space-xs"><span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-tertiary-fixed opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-tertiary-fixed"></span></span><span class="font-label-sm text-label-sm uppercase tracking-wider text-surface-bright">Cloud Gateway Active</span><span class="font-label-sm text-label-sm text-on-primary-container/60">•</span><span class="font-label-sm text-label-sm bg-surface-container/10 px-1.5 py-0.5 rounded text-tertiary-fixed font-mono">DIRECT STREAM</span></div><div class="hidden xl:flex items-center gap-space-md text-on-primary-container/80 font-label-sm text-label-sm"><div class="flex items-center gap-1"><span class="material-symbols-outlined text-[15px] text-tertiary-fixed">qr_code_scanner</span><span>HID Scanner: <strong class="text-surface-bright font-medium">READY [COM4]</strong></span></div><div class="flex items-center gap-1"><span class="material-symbols-outlined text-[15px] text-tertiary-fixed">print</span><span>Zebra ZD421: <strong class="text-surface-bright font-medium">ONLINE (ESC/POS)</strong></span></div></div></div><div class="flex items-center gap-space-md font-label-sm text-label-sm"><div class="flex items-center gap-1.5 bg-surface-container/10 px-2 py-0.5 rounded"><span class="material-symbols-outlined text-[16px] text-surface-bright">point_of_sale</span><span class="text-on-primary-container/70">Drawer #1 Balance:</span><span class="font-label-md text-label-md font-mono font-semibold text-surface-bright">$450.00</span></div><div class="flex items-center gap-1 text-on-primary-container/60"><span class="material-symbols-outlined text-[14px]">lock_clock</span><span>Shift 08:30–17:00</span></div></div></div>
+<!-- Main POS Operational Split View -->
+<div class="flex flex-col lg:flex-row w-full min-h-[calc(100vh-5.5rem)] p-space-md gap-space-md bg-surface">
+<!-- LEFT PANEL: Barcode Scan, Categories & Product Matrix (65%) -->
+<section class="flex flex-col w-full lg:w-[65%] gap-space-md">
+<!-- Barcode / SKU Inset Search Box -->
+<div class="bg-surface-container-lowest p-space-md rounded shadow-sm flex flex-col gap-space-sm">
+<div class="flex items-center gap-space-sm">
+<div class="relative flex-1">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-outline">
+<span class="material-symbols-outlined text-[20px]">barcode_scanner</span>
+</div>
+<input autocomplete="off" class="w-full bg-surface-container-low text-on-surface font-label-lg text-label-lg pl-10 pr-24 py-2.5 rounded focus:outline-none focus:bg-surface-container-lowest shadow-inner" id="skuInput" placeholder="Scan Barcode (UPC/EAN) or enter SKU (e.g. DNM-04-BLK)..." type="text">
+<div class="absolute inset-y-0 right-0 pr-2.5 flex items-center gap-1 pointer-events-none">
+<span class="font-label-sm text-label-sm bg-surface-container px-1.5 py-0.5 rounded text-on-surface-variant font-mono">F2 SCAN</span>
+<span class="font-label-sm text-label-sm bg-surface-container px-1.5 py-0.5 rounded text-on-surface-variant font-mono">⌘K</span>
+</div>
+</div>
+<button class="bg-primary hover:bg-primary/90 text-on-primary font-headline-sm text-body-md px-4 py-2.5 rounded flex items-center gap-1.5 shadow-sm transition-all active:scale-[0.98]" onclick="triggerQuickScan()" type="button">
+<span class="material-symbols-outlined text-[18px]">add_circle</span>
+<span>Add SKU</span>
+</button>
+</div>
+<!-- Filter Pills & Variant Matrix Quick Switch -->
+<div class="flex items-center justify-between gap-space-sm pt-space-xs overflow-x-auto">
+<div class="flex items-center gap-1.5">
+<button class="cat-pill active-pill bg-primary text-on-primary font-label-md text-label-md px-3 py-1 rounded font-medium shadow-sm">All SKUs (142)</button>
+<button class="cat-pill bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container font-label-md text-label-md px-3 py-1 rounded font-medium">Denim (38)</button>
+<button class="cat-pill bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container font-label-md text-label-md px-3 py-1 rounded font-medium">Outerwear (24)</button>
+<button class="cat-pill bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container font-label-md text-label-md px-3 py-1 rounded font-medium">Footwear (31)</button>
+<button class="cat-pill bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container font-label-md text-label-md px-3 py-1 rounded font-medium">Tops (35)</button>
+<button class="cat-pill bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container font-label-md text-label-md px-3 py-1 rounded font-medium">Accessories (14)</button>
+</div>
+<div class="flex items-center gap-2 text-outline font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px]">tune</span>
+<span class="hidden sm:inline">Sorting: Fast Moving</span>
+</div>
+</div>
+</div>
+<!-- High-Density Product & Variant Grid -->
+<div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-space-sm flex-1 content-start">
+<!-- Product Item 1: Raw Selvedge Denim -->
+<div class="group bg-surface-container-lowest hover:bg-surface-container-low cursor-pointer rounded p-space-sm flex flex-col justify-between shadow-sm transition-all duration-150 relative" onclick="addToTicket('SKU-9921', 'Raw Selvedge Denim Jean', '32 x 34 / Indigo', 128.00)">
+<div class="flex flex-col gap-space-xs">
+<div class="relative w-full h-28 rounded overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" data-alt="Editorial studio photograph of heavy selvedge denim indigo trousers folded neatly on a polished concrete pedestal, high-contrast directional lighting, clean lines, garment detailing, dark blue indigo texture" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOop6Q_eN75lcDkAkexvRhr_lgbHTisHLQVkdQ5ssEvnYlA-_8zQJMvpWP9PouPBuYQiExK--LXdVKigk3FwTQ0ozhnRs5Cs3EEhiWZW8DnSpsS9d1rB2yIxZ6mNxFaD3KBoncHVuJ2qn-tmcm7-VJiRMFGERXakgXq_mN2ykCQblm2dN9glRHlk3TnF0bkp7aVt0aKpxZUYJOVuDHTwaolU-MOiuo46zX4TyCh4SX">
+<span class="absolute top-1 left-1 font-label-sm text-label-sm bg-primary/90 text-on-primary px-1.5 py-0.5 rounded font-mono">DNM-9921</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-headline-sm text-body-md text-on-surface truncate group-hover:text-secondary">Raw Selvedge Denim Jean</span>
+<div class="flex items-center gap-1.5 text-on-surface-variant font-label-sm text-label-sm">
+<span class="bg-surface-container px-1 py-0.2 rounded font-mono">32 x 34</span>
+<span class="truncate">Deep Indigo</span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between pt-space-xs mt-space-xs">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline">Stock 18 pcs</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface font-mono">$128.00</span>
+</div>
+<button class="w-7 h-7 rounded bg-surface-container text-on-surface group-hover:bg-primary group-hover:text-on-primary flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-[16px]">add</span>
+</button>
+</div>
+</div>
+<!-- Product Item 2: Waxed Heavy Trench (Low Stock Alert) -->
+<div class="group bg-surface-container-lowest hover:bg-surface-container-low cursor-pointer rounded p-space-sm flex flex-col justify-between shadow-sm transition-all duration-150 relative" onclick="addToTicket('SKU-4402', 'Heavy Waxed Utility Jacket', 'L / Khaki Moss', 185.00)">
+<div class="flex flex-col gap-space-xs">
+<div class="relative w-full h-28 rounded overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" data-alt="Studio catalog shot of a heavy olive khaki waxed utility jacket with brass hardware and storm flap, hanging against a minimal chalk gray background, industrial workwear silhouette" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD5Uovw3chOgn8mXdRvbAn1bpXyA30TQSuFtxQ4K8OOYueeky5kqtgE8c8MxiYRmqXftXHl_XVvXxbvDXW2ekwlGebfou8ahcE4o3slknxoejtAJR0gJNq5ZV1ewOeqpLjpZkd1_yhvziAb2WLiom9nheBwySC15pciSBBvjH7WVoVYntoZN9RBQTM0yvdudjJjQZ5o1m6zYJPwCARlRG1UrZUfooPtzTwblLsShyIW">
+<span class="absolute top-1 left-1 font-label-sm text-label-sm bg-error-container text-on-error-container px-1.5 py-0.5 rounded font-mono font-bold flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[12px]">warning</span> Low: 3 Left
+              </span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-headline-sm text-body-md text-on-surface truncate group-hover:text-secondary">Heavy Waxed Utility Jacket</span>
+<div class="flex items-center gap-1.5 text-on-surface-variant font-label-sm text-label-sm">
+<span class="bg-surface-container px-1 py-0.2 rounded font-mono">Size L</span>
+<span class="truncate">Khaki Moss</span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between pt-space-xs mt-space-xs">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-error font-medium">Local: 3 units</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface font-mono">$185.00</span>
+</div>
+<button class="w-7 h-7 rounded bg-surface-container text-on-surface group-hover:bg-primary group-hover:text-on-primary flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-[16px]">add</span>
+</button>
+</div>
+</div>
+<!-- Product Item 3: Leather Chelsea Boot (Discrepancy Mark) -->
+<div class="group bg-surface-container-lowest hover:bg-surface-container-low cursor-pointer rounded p-space-sm flex flex-col justify-between shadow-sm transition-all duration-150 relative" onclick="addToTicket('SKU-1823', 'Vibram Commando Chelsea', 'US 10.5 / Nero', 210.00)">
+<div class="flex flex-col gap-space-xs">
+<div class="relative w-full h-28 rounded overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" data-alt="Luxury commercial shot of black polished calfskin Chelsea boot with chunky lugged Vibram sole, placed on a slate block, sharp raking light emphasizing leather sheen" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCHnbda0e15wfJR-CcOryjqtV-YhnW26Wrrn4w5_poXFymBlZrlUfEY_3GfjQ6zco7PSy-gOaWSPJBM7mnB65hidXvilCLYN4S59WEoSLtNdKf-OEuBhK02A-oO23QXRDHs-UpUaiG-mKfrgOu-PJodJTZxNtLyCBkADBpdOdXd6YRA7pndz66yR110DxiOMFLOBikTYSRYbym_wHfDnaHbkL3JAnOMdP__Ww5z3BqH">
+<span class="absolute top-1 left-1 font-label-sm text-label-sm bg-surface-container-highest text-on-surface-variant px-1.5 py-0.5 rounded font-mono">FTW-1823</span>
+<span class="absolute top-1 right-1 font-label-sm text-label-sm bg-error text-on-error px-1.5 py-0.5 rounded flex items-center gap-0.5" title="Physical cycle count differs from SQLite cache">
+<span class="material-symbols-outlined text-[10px]">sync_problem</span> Audit
+              </span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-headline-sm text-body-md text-on-surface truncate group-hover:text-secondary">Vibram Commando Chelsea</span>
+<div class="flex items-center gap-1.5 text-on-surface-variant font-label-sm text-label-sm">
+<span class="bg-surface-container px-1 py-0.2 rounded font-mono">10.5 US</span>
+<span class="truncate">Nero Black</span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between pt-space-xs mt-space-xs">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline">Stock 7 (Δ -1)</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface font-mono">$210.00</span>
+</div>
+<button class="w-7 h-7 rounded bg-surface-container text-on-surface group-hover:bg-primary group-hover:text-on-primary flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-[16px]">add</span>
+</button>
+</div>
+</div>
+<!-- Product Item 4: Heavyweight Loopwheel Tee -->
+<div class="group bg-surface-container-lowest hover:bg-surface-container-low cursor-pointer rounded p-space-sm flex flex-col justify-between shadow-sm transition-all duration-150 relative" onclick="addToTicket('SKU-8302', '300GSM Heavyweight Loopwheel', 'M / Off-White', 48.00)">
+<div class="flex flex-col gap-space-xs">
+<div class="relative w-full h-28 rounded overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" data-alt="High-resolution flat lay of a dense off-white heavy cotton crewneck t-shirt on a dark architectural background, displaying thick ribbed collar and dense woven fabric grain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBszV81m2kqXB44Oxs6QW6Oq9dF3g-Bchs9wWT9Euomdz2u5HWNqDG5sdh029sgSqlcmWekJIVc8gPJdX_3bMVYzABjZ6M8PCjZgBvBV-95pEg2tj6XXoRR4Rkii6AyJelRoe5Nv8ILPLtgFGE9e4ctaJxgUT-egDvucuD9rugln2OVzL5bR4T58NxPUBWQ_xjVukeKmjlwqBfpszyrYHtMarPajRLI1oOAh4rKvsl7">
+<span class="absolute top-1 left-1 font-label-sm text-label-sm bg-primary/90 text-on-primary px-1.5 py-0.5 rounded font-mono">TOP-8302</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-headline-sm text-body-md text-on-surface truncate group-hover:text-secondary">300GSM Loopwheel Tee</span>
+<div class="flex items-center gap-1.5 text-on-surface-variant font-label-sm text-label-sm">
+<span class="bg-surface-container px-1 py-0.2 rounded font-mono">Medium</span>
+<span class="truncate">Off-White Ecru</span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between pt-space-xs mt-space-xs">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline">Stock 44 pcs</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface font-mono">$48.00</span>
+</div>
+<button class="w-7 h-7 rounded bg-surface-container text-on-surface group-hover:bg-primary group-hover:text-on-primary flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-[16px]">add</span>
+</button>
+</div>
+</div>
+<!-- Product Item 5: Bridle Leather Roller Belt -->
+<div class="group bg-surface-container-lowest hover:bg-surface-container-low cursor-pointer rounded p-space-sm flex flex-col justify-between shadow-sm transition-all duration-150 relative" onclick="addToTicket('SKU-1094', 'Bridle Brass Hardware Belt', '34 / Chestnut Brown', 65.00)">
+<div class="flex flex-col gap-space-xs">
+<div class="relative w-full h-28 rounded overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" data-alt="Curled chestnut brown bridle leather belt with solid brushed brass buckle resting on a dark walnut wood board, rich warm studio lighting and burnished edge detailing" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDl6gm27i8uCI2RlQpaWclxFoFwbZ1axXFGYyU99OKHNbAaHyibSE3uUi-lbc7KHUWMFsyAEz9jtpj7Cqa6GpD__J23XYLsWdWLQVUe0LgDGc_twbj-RZXRqrDmgC9BUvbh7-1jKoLHbbSzSvHK9fTFXRthIo8SlG80jTimOP3O54g1MSmZqoIMM6RaoAJRNfcMN4O_539HblOJCZmKsb8kF5MOEyP6xkCuWCuUkVQ_">
+<span class="absolute top-1 left-1 font-label-sm text-label-sm bg-primary/90 text-on-primary px-1.5 py-0.5 rounded font-mono">ACC-1094</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-headline-sm text-body-md text-on-surface truncate group-hover:text-secondary">Bridle Brass Belt</span>
+<div class="flex items-center gap-1.5 text-on-surface-variant font-label-sm text-label-sm">
+<span class="bg-surface-container px-1 py-0.2 rounded font-mono">34 in</span>
+<span class="truncate">Chestnut Tan</span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between pt-space-xs mt-space-xs">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline">Stock 12 pcs</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface font-mono">$65.00</span>
+</div>
+<button class="w-7 h-7 rounded bg-surface-container text-on-surface group-hover:bg-primary group-hover:text-on-primary flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-[16px]">add</span>
+</button>
+</div>
+</div>
+<!-- Product Item 6: Oversized Waffle Thermal -->
+<div class="group bg-surface-container-lowest hover:bg-surface-container-low cursor-pointer rounded p-space-sm flex flex-col justify-between shadow-sm transition-all duration-150 relative" onclick="addToTicket('SKU-5011', 'Thermal Knit Henley Waffle', 'L / Slate Smoke', 72.00)">
+<div class="flex flex-col gap-space-xs">
+<div class="relative w-full h-28 rounded overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" data-alt="Close up garment photograph of a slate grey heavy waffle knit long sleeve henley shirt with mother of pearl buttons, tactile textile texture, subtle depth of field" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCupZGkRmwj09rFIXWpSZugOe3AtcbVAo3-QXmuKsAGA2VZxCheLIRBso4sTLa-T-2Q4Y3TBB2ffZYdEJiu2EV-Q44XubYRREJTLWoE080zlbYxp2Kzx8DXps0oiso5VNpMvK4mnK3UAAokewQB2vz_vvFYHHOrvNqj4xRiKRnLPifkRTx1S7EJvlp6mxXDclXlM5xWqM6aW4zWoc5BiKEH6PjTozTbRNj0t6KToCIz">
+<span class="absolute top-1 left-1 font-label-sm text-label-sm bg-primary/90 text-on-primary px-1.5 py-0.5 rounded font-mono">TOP-5011</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-headline-sm text-body-md text-on-surface truncate group-hover:text-secondary">Waffle Knit Henley</span>
+<div class="flex items-center gap-1.5 text-on-surface-variant font-label-sm text-label-sm">
+<span class="bg-surface-container px-1 py-0.2 rounded font-mono">Size L</span>
+<span class="truncate">Slate Smoke</span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between pt-space-xs mt-space-xs">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline">Stock 26 pcs</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface font-mono">$72.00</span>
+</div>
+<button class="w-7 h-7 rounded bg-surface-container text-on-surface group-hover:bg-primary group-hover:text-on-primary flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-[16px]">add</span>
+</button>
+</div>
+</div>
+<!-- Product Item 7: Japanese Canvas Tote -->
+<div class="group bg-surface-container-lowest hover:bg-surface-container-low cursor-pointer rounded p-space-sm flex flex-col justify-between shadow-sm transition-all duration-150 relative" onclick="addToTicket('SKU-7729', 'Heavy Cotton Canvas Carrier', 'OS / Olive Ecru', 55.00)">
+<div class="flex flex-col gap-space-xs">
+<div class="relative w-full h-28 rounded overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" data-alt="Heavyweight dual tone army olive and ecru canvas tote bag standing upright against a matte gray studio wall, durable copper rivets on handles, minimalist industrial aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZtBJKZCjbNuW4mrbXDfIpExCwd8F_UHkt1AgC5CeAGubOLmbQAV616oGDj8L0Yhw_H191y03FjwtwxoZUJ9WU43Z0uyHqbaTx1IcabmDlt1KMghHH3RfL_ru6VB1-o6NmF5w9L0LAQRWKJz5GDmwzFV-O5Zb-XqHKA8dZghcv6_1LgSm_O3ktR1yxFIramMSD5cKyMjLZKM2zNg23PpWclS_CniYwjyM1r6EprJ1q">
+<span class="absolute top-1 left-1 font-label-sm text-label-sm bg-primary/90 text-on-primary px-1.5 py-0.5 rounded font-mono">ACC-7729</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-headline-sm text-body-md text-on-surface truncate group-hover:text-secondary">Canvas Field Tote</span>
+<div class="flex items-center gap-1.5 text-on-surface-variant font-label-sm text-label-sm">
+<span class="bg-surface-container px-1 py-0.2 rounded font-mono">One Size</span>
+<span class="truncate">Olive Drab</span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between pt-space-xs mt-space-xs">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline">Stock 19 pcs</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface font-mono">$55.00</span>
+</div>
+<button class="w-7 h-7 rounded bg-surface-container text-on-surface group-hover:bg-primary group-hover:text-on-primary flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-[16px]">add</span>
+</button>
+</div>
+</div>
+<!-- Product Item 8: Alpaca Rib Beanie -->
+<div class="group bg-surface-container-lowest hover:bg-surface-container-low cursor-pointer rounded p-space-sm flex flex-col justify-between shadow-sm transition-all duration-150 relative" onclick="addToTicket('SKU-3120', 'Alpaca Wool Watch Cap', 'OS / Charcoal Melange', 38.00)">
+<div class="flex flex-col gap-space-xs">
+<div class="relative w-full h-28 rounded overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" data-alt="Folded charcoal melange ribbed knit alpaca watch cap resting on a cold raw steel surface, detailed wool fibers, subtle overcast lighting, minimalist apparel product shoot" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCIDGFCkf_hl5exudduxAOhKFPA_MQyMC-AWZXAebP0au1KWvT-ZzVkk5axQ9DQoc60avbE08bP1rtipjIObm68A5jQHDShNpHyXMGMKva8OUzjvFDbyN_g8zpqcxYkzRoLCbgkxycI_w0y9w5ydVPIo8Kqh7cCbbMpW-JvKVC9Rz-ruN1ZXE6MUkoZ836Bf9t0lTIfJHBpyqLtGtFK_DatXrfgwlggESrPuvuw_h_M">
+<span class="absolute top-1 left-1 font-label-sm text-label-sm bg-primary/90 text-on-primary px-1.5 py-0.5 rounded font-mono">ACC-3120</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-headline-sm text-body-md text-on-surface truncate group-hover:text-secondary">Alpaca Watch Cap</span>
+<div class="flex items-center gap-1.5 text-on-surface-variant font-label-sm text-label-sm">
+<span class="bg-surface-container px-1 py-0.2 rounded font-mono">One Size</span>
+<span class="truncate">Charcoal</span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between pt-space-xs mt-space-xs">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline">Stock 31 pcs</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface font-mono">$38.00</span>
+</div>
+<button class="w-7 h-7 rounded bg-surface-container text-on-surface group-hover:bg-primary group-hover:text-on-primary flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-[16px]">add</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- RIGHT PANEL: Active Ticket Drawer (35%) -->
+<aside class="w-full lg:w-[35%] flex flex-col bg-surface-container-lowest rounded shadow-md overflow-hidden self-start sticky top-16">
+<!-- Ticket Header & Mode Switch -->
+<div class="p-space-md bg-surface-container-low flex flex-col gap-space-sm shadow-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="font-headline-md text-headline-md font-bold tracking-tight text-on-surface">Ticket #0492</span>
+<span class="font-label-sm text-label-sm bg-secondary-fixed text-on-secondary-fixed px-1.5 py-0.5 rounded font-mono font-medium">TERMINAL-01</span>
+</div>
+<button class="text-outline hover:text-error transition-colors p-1 rounded flex items-center" onclick="clearTicket()" title="Void / Clear Active Ticket" type="button">
+<span class="material-symbols-outlined text-[20px]">delete_sweep</span>
+</button>
+</div>
+<!-- Segmented Mode Control -->
+<div class="grid grid-cols-2 p-0.5 bg-surface-container rounded gap-1">
+<button class="py-1 text-center font-label-md text-label-md rounded font-semibold transition-all bg-surface-container-lowest text-primary shadow-sm" id="btnModeSale" onclick="setMode('sale')">
+            Standard Sale
+          </button>
+<button class="py-1 text-center font-label-md text-label-md rounded font-medium transition-all text-on-surface-variant hover:text-on-surface" id="btnModeReturn" onclick="setMode('return')">
+            Return / Exchange
+          </button>
+</div>
+</div>
+<!-- Line Items List -->
+<div class="p-space-md flex flex-col gap-space-sm max-h-[380px] overflow-y-auto divide-y-0" id="cartItemsList">
+<!-- Cart Line Item 1 -->
+<div class="cart-row flex items-center justify-between gap-space-sm p-space-sm rounded bg-surface-container-low/70 transition-colors" data-id="item-1" data-price="128.00">
+<div class="flex flex-col min-w-0 flex-1">
+<div class="flex items-center gap-1.5">
+<span class="font-headline-sm text-body-md text-on-surface truncate">Raw Selvedge Denim</span>
+<span class="font-label-sm text-label-sm bg-surface-container px-1 py-0.2 rounded text-outline font-mono">32x34</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-mono">DNM-9921 • $128.00 ea</span>
+</div>
+<!-- Stepper -->
+<div class="flex items-center gap-1 bg-surface-container-lowest rounded px-1 py-0.5 shadow-sm">
+<button class="w-6 h-6 flex items-center justify-center text-on-surface-variant hover:text-error transition-colors" onclick="updateQty(this, -1)">
+<span class="material-symbols-outlined text-[14px]">remove</span>
+</button>
+<span class="qty-val font-label-md text-label-md font-mono px-1 min-w-[20px] text-center font-semibold text-on-surface">1</span>
+<button class="w-6 h-6 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors" onclick="updateQty(this, 1)">
+<span class="material-symbols-outlined text-[14px]">add</span>
+</button>
+</div>
+<!-- Total for line -->
+<div class="flex flex-col items-end min-w-[70px]">
+<span class="line-total font-label-md text-label-md font-bold text-on-surface font-mono">$128.00</span>
+<button class="font-label-sm text-label-sm text-secondary hover:underline flex items-center gap-0.5" onclick="toggleDiscount(this)">
+<span class="material-symbols-outlined text-[12px]">sell</span>
+<span class="disc-label">Disc</span>
+</button>
+</div>
+</div>
+<!-- Cart Line Item 2 -->
+<div class="cart-row flex items-center justify-between gap-space-sm p-space-sm rounded bg-surface-container-low/70 transition-colors" data-id="item-2" data-price="185.00">
+<div class="flex flex-col min-w-0 flex-1">
+<div class="flex items-center gap-1.5">
+<span class="font-headline-sm text-body-md text-on-surface truncate">Heavy Waxed Utility</span>
+<span class="font-label-sm text-label-sm bg-surface-container px-1 py-0.2 rounded text-outline font-mono">Size L</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-mono">SKU-4402 • $185.00 ea</span>
+</div>
+<!-- Stepper -->
+<div class="flex items-center gap-1 bg-surface-container-lowest rounded px-1 py-0.5 shadow-sm">
+<button class="w-6 h-6 flex items-center justify-center text-on-surface-variant hover:text-error transition-colors" onclick="updateQty(this, -1)">
+<span class="material-symbols-outlined text-[14px]">remove</span>
+</button>
+<span class="qty-val font-label-md text-label-md font-mono px-1 min-w-[20px] text-center font-semibold text-on-surface">1</span>
+<button class="w-6 h-6 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors" onclick="updateQty(this, 1)">
+<span class="material-symbols-outlined text-[14px]">add</span>
+</button>
+</div>
+<!-- Total for line -->
+<div class="flex flex-col items-end min-w-[70px]">
+<span class="line-total font-label-md text-label-md font-bold text-on-surface font-mono">$185.00</span>
+<button class="font-label-sm text-label-sm text-secondary hover:underline flex items-center gap-0.5" onclick="toggleDiscount(this)">
+<span class="material-symbols-outlined text-[12px]">sell</span>
+<span class="disc-label">Disc</span>
+</button>
+</div>
+</div>
+<!-- Cart Line Item 3 (Discount Applied Promo) -->
+<div class="cart-row flex items-center justify-between gap-space-sm p-space-sm rounded bg-surface-container-low/70 transition-colors" data-discount="10" data-id="item-3" data-price="48.00">
+<div class="flex flex-col min-w-0 flex-1">
+<div class="flex items-center gap-1.5">
+<span class="font-headline-sm text-body-md text-on-surface truncate">300GSM Loopwheel Tee</span>
+<span class="font-label-sm text-label-sm bg-surface-container px-1 py-0.2 rounded text-outline font-mono">Medium</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant font-mono">TOP-8302</span>
+<span class="font-label-sm text-label-sm text-on-tertiary-container bg-surface-container px-1 rounded font-mono">-10% VIP</span>
+</div>
+</div>
+<!-- Stepper -->
+<div class="flex items-center gap-1 bg-surface-container-lowest rounded px-1 py-0.5 shadow-sm">
+<button class="w-6 h-6 flex items-center justify-center text-on-surface-variant hover:text-error transition-colors" onclick="updateQty(this, -1)">
+<span class="material-symbols-outlined text-[14px]">remove</span>
+</button>
+<span class="qty-val font-label-md text-label-md font-mono px-1 min-w-[20px] text-center font-semibold text-on-surface">1</span>
+<button class="w-6 h-6 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors" onclick="updateQty(this, 1)">
+<span class="material-symbols-outlined text-[14px]">add</span>
+</button>
+</div>
+<!-- Total for line -->
+<div class="flex flex-col items-end min-w-[70px]">
+<span class="line-total font-label-md text-label-md font-bold text-on-surface font-mono">$43.20</span>
+<span class="font-label-sm text-label-sm text-outline line-through font-mono">$48.00</span>
+</div>
+</div>
+</div>
+<!-- Breakdown Calculations & Tenders -->
+<div class="p-space-md bg-surface-container-low flex flex-col gap-space-sm shadow-inner mt-auto">
+<div class="flex flex-col gap-1 text-on-surface-variant font-label-md text-label-md">
+<div class="flex justify-between">
+<span>Subtotal (3 items)</span>
+<span class="font-mono text-on-surface" id="txtSubtotal">$356.20</span>
+</div>
+<div class="flex justify-between items-center text-on-surface-variant">
+<span class="flex items-center gap-1">
+<span>NYC Combined Tax</span>
+<span class="font-label-sm text-label-sm bg-surface-container px-1 py-0.2 rounded font-mono">8.875%</span>
+</span>
+<span class="font-mono text-on-surface" id="txtTax">$31.61</span>
+</div>
+<div class="flex justify-between text-on-surface-variant">
+<span>Manual Line Discount</span>
+<span class="font-mono text-tertiary-container font-medium" id="txtDiscount">-$4.80</span>
+</div>
+</div>
+<div class="flex items-baseline justify-between pt-space-xs bg-surface-container-lowest p-space-sm rounded shadow-sm">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-outline">Total Balance Due</span>
+<span class="font-label-sm text-label-sm text-on-tertiary-container font-medium">USD • Tax Included</span>
+</div>
+<span class="font-headline-lg text-headline-lg font-bold text-primary font-mono tabular-nums tracking-tight" id="txtGrandTotal">
+            $383.01
+          </span>
+</div>
+<!-- Quick Cash Tender Shortcuts -->
+<div class="flex flex-col gap-1.5 pt-space-xs">
+<div class="flex items-center justify-between text-outline font-label-sm text-label-sm">
+<span>FAST CASH TENDER</span>
+<span>DRAWER LOCK OK</span>
+</div>
+<div class="grid grid-cols-3 gap-1.5">
+<button class="bg-surface-container hover:bg-surface-container-high py-2 rounded font-label-md text-label-md font-mono text-on-surface font-semibold text-center shadow-sm transition-colors" onclick="tenderCash(383.01)">
+              Exact $383.01
+            </button>
+<button class="bg-surface-container hover:bg-surface-container-high py-2 rounded font-label-md text-label-md font-mono text-on-surface font-semibold text-center shadow-sm transition-colors" onclick="tenderCash(390.00)">
+              $390.00
+            </button>
+<button class="bg-surface-container hover:bg-surface-container-high py-2 rounded font-label-md text-label-md font-mono text-on-surface font-semibold text-center shadow-sm transition-colors" onclick="tenderCash(400.00)">
+              $400.00
+            </button>
+</div>
+</div>
+<!-- Card / NFC Primary Row -->
+<div class="grid grid-cols-2 gap-2">
+<button class="bg-surface-container-lowest hover:bg-surface-container-high py-2.5 rounded font-label-md text-label-md text-on-surface font-semibold flex items-center justify-center gap-1.5 shadow-sm transition-colors" onclick="triggerTerminalPayment('NFC')" type="button">
+<span class="material-symbols-outlined text-[18px] text-secondary">contactless</span>
+<span>Tap / Chip Reader</span>
+</button>
+<button class="bg-surface-container-lowest hover:bg-surface-container-high py-2.5 rounded font-label-md text-label-md text-on-surface font-semibold flex items-center justify-center gap-1.5 shadow-sm transition-colors" onclick="triggerTerminalPayment('Split')" type="button">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">splitscreen</span>
+<span>Split Tender</span>
+</button>
+</div>
+<!-- Big Primary CTA -->
+<button class="w-full bg-primary hover:bg-primary/95 text-on-primary py-3 rounded font-headline-sm text-body-lg font-bold flex flex-col items-center justify-center shadow-md active:scale-[0.99] transition-all" id="btnCompleteSale" onclick="completeOfflineTransaction()" type="button"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-[20px]">cloud_done</span><span>Complete Sale &amp; Print Receipt</span></div><span class="font-label-sm text-label-sm text-on-primary-container/90 font-normal">Instant Cloud Processing • Receipt Auto-Email</span></button>
+</div>
+</aside>
+</div>
+<!-- Offline Receipt Floating Drawer / Alert Banner (Hidden by default, triggered on Sale) -->
+<div class="fixed bottom-4 right-4 bg-primary text-on-primary p-space-md rounded shadow-xl flex items-center gap-space-md z-50 transform translate-y-24 opacity-0 pointer-events-none transition-all duration-300" id="receiptToast">
+<div class="w-9 h-9 rounded bg-tertiary-container text-on-tertiary flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]">check_circle</span>
+</div>
+<div class="flex flex-col"><span class="font-headline-sm text-body-md font-bold text-surface-bright">Sale #0492 Confirmed Online</span><span class="font-label-sm text-label-sm text-on-primary-container font-mono">Receipt Dispatched • Cloud Ledger Updated</span></div>
+<button class="text-on-primary-container hover:text-surface-bright p-1" onclick="dismissReceiptToast()">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+</div>
+<script>
+  // Simple in-memory POS interactions
+  function updateQty(btn, change) {
+    const row = btn.closest('.cart-row');
+    const qtySpan = row.querySelector('.qty-val');
+    let qty = parseInt(qtySpan.textContent, 10) + change;
+    if (qty <= 0) {
+      row.remove();
+    } else {
+      qtySpan.textContent = qty;
+      const basePrice = parseFloat(row.getAttribute('data-price'));
+      const discount = parseFloat(row.getAttribute('data-discount') || 0);
+      const unit = basePrice * (1 - discount / 100);
+      row.querySelector('.line-total').textContent = '$' + (unit * qty).toFixed(2);
+    }
+    recalculateTotals();
+  }
+
+  function toggleDiscount(btn) {
+    const row = btn.closest('.cart-row');
+    const hasDiscount = row.getAttribute('data-discount');
+    if (hasDiscount) {
+      row.removeAttribute('data-discount');
+      btn.querySelector('.disc-label').textContent = 'Disc';
+    } else {
+      row.setAttribute('data-discount', '15');
+      btn.querySelector('.disc-label').textContent = '-15%';
+    }
+    const qty = parseInt(row.querySelector('.qty-val').textContent, 10);
+    const basePrice = parseFloat(row.getAttribute('data-price'));
+    const discount = parseFloat(row.getAttribute('data-discount') || 0);
+    const unit = basePrice * (1 - discount / 100);
+    row.querySelector('.line-total').textContent = '$' + (unit * qty).toFixed(2);
+    recalculateTotals();
+  }
+
+  function addToTicket(sku, title, variant, price) {
+    const list = document.getElementById('cartItemsList');
+    const existing = Array.from(list.querySelectorAll('.cart-row')).find(r => r.querySelector('span.truncate')?.textContent === title);
+
+    if (existing) {
+      const plusBtn = existing.querySelector('button[onclick*="1)"]:not([onclick*="-1"])');
+      updateQty(plusBtn, 1);
+      return;
+    }
+
+    const row = document.createElement('div');
+    row.className = 'cart-row flex items-center justify-between gap-space-sm p-space-sm rounded bg-surface-container-low/70 transition-colors';
+    row.setAttribute('data-price', price.toFixed(2));
+    row.innerHTML = `
+      <div class="flex flex-col min-w-0 flex-1">
+        <div class="flex items-center gap-1.5">
+          <span class="font-headline-sm text-body-md text-on-surface truncate">\${title}</span>
+          <span class="font-label-sm text-label-sm bg-surface-container px-1 py-0.2 rounded text-outline font-mono">\${variant}</span>
+        </div>
+        <span class="font-label-sm text-label-sm text-on-surface-variant font-mono">\${sku} • $\${price.toFixed(2)} ea</span>
+      </div>
+      <div class="flex items-center gap-1 bg-surface-container-lowest rounded px-1 py-0.5 shadow-sm">
+        <button onclick="updateQty(this, -1)" class="w-6 h-6 flex items-center justify-center text-on-surface-variant hover:text-error transition-colors">
+          <span class="material-symbols-outlined text-[14px]">remove</span>
+        </button>
+        <span class="qty-val font-label-md text-label-md font-mono px-1 min-w-[20px] text-center font-semibold text-on-surface">1</span>
+        <button onclick="updateQty(this, 1)" class="w-6 h-6 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors">
+          <span class="material-symbols-outlined text-[14px]">add</span>
+        </button>
+      </div>
+      <div class="flex flex-col items-end min-w-[70px]">
+        <span class="line-total font-label-md text-label-md font-bold text-on-surface font-mono">$\${price.toFixed(2)}</span>
+        <button onclick="toggleDiscount(this)" class="font-label-sm text-label-sm text-secondary hover:underline flex items-center gap-0.5">
+          <span class="material-symbols-outlined text-[12px]">sell</span>
+          <span class="disc-label">Disc</span>
+        </button>
+      </div>
+    `;
+    list.prepend(row);
+    recalculateTotals();
+  }
+
+  function recalculateTotals() {
+    const rows = document.querySelectorAll('#cartItemsList .cart-row');
+    let subtotal = 0;
+    rows.forEach(r => {
+      const qty = parseInt(r.querySelector('.qty-val').textContent, 10);
+      const base = parseFloat(r.getAttribute('data-price'));
+      const discount = parseFloat(r.getAttribute('data-discount') || 0);
+      subtotal += (base * (1 - discount / 100)) * qty;
+    });
+
+    const tax = subtotal * 0.08875;
+    const total = subtotal + tax;
+
+    document.getElementById('txtSubtotal').textContent = '$' + subtotal.toFixed(2);
+    document.getElementById('txtTax').textContent = '$' + tax.toFixed(2);
+    document.getElementById('txtGrandTotal').textContent = '$' + total.toFixed(2);
+  }
+
+  function clearTicket() {
+    if (confirm('Void current active ticket items?')) {
+      document.getElementById('cartItemsList').innerHTML = '<div class="text-center py-8 text-outline font-label-md text-label-md">Cart is empty. Scan barcode or select item to start.</div>';
+      recalculateTotals();
+    }
+  }
+
+  function setMode(mode) {
+    const saleBtn = document.getElementById('btnModeSale');
+    const retBtn = document.getElementById('btnModeReturn');
+    if (mode === 'sale') {
+      saleBtn.className = 'py-1 text-center font-label-md text-label-md rounded font-semibold transition-all bg-surface-container-lowest text-primary shadow-sm';
+      retBtn.className = 'py-1 text-center font-label-md text-label-md rounded font-medium transition-all text-on-surface-variant hover:text-on-surface';
+    } else {
+      retBtn.className = 'py-1 text-center font-label-md text-label-md rounded font-semibold transition-all bg-surface-container-lowest text-error shadow-sm';
+      saleBtn.className = 'py-1 text-center font-label-md text-label-md rounded font-medium transition-all text-on-surface-variant hover:text-on-surface';
+    }
+  }
+
+  function triggerQuickScan() {
+    const input = document.getElementById('skuInput');
+    const val = input.value.trim().toUpperCase();
+    if (val) {
+      addToTicket(val, 'Scanned Apparel Item ' + val, 'Standard Size / Black', 89.00);
+      input.value = '';
+    } else {
+      addToTicket('UPC-88129', 'Classic Selvedge 14oz', '34 x 32 / Raw Indigo', 145.00);
+    }
+  }
+
+  function completeOfflineTransaction() {
+    const toast = document.getElementById('receiptToast');
+    toast.classList.remove('translate-y-24', 'opacity-0', 'pointer-events-none');
+    setTimeout(() => {
+      dismissReceiptToast();
+    }, 4500);
+  }
+
+  function dismissReceiptToast() {
+    const toast = document.getElementById('receiptToast');
+    toast.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
+  }
+
+  function tenderCash(amount) {
+    alert('Processing Cash Payment: $' + amount.toFixed(2) + '. Change calculated and cash drawer trigger fired.');
+    completeOfflineTransaction();
+  }
+
+  function triggerTerminalPayment(type) {
+    alert('Contacting Payment Terminal (HID/USB/NFC) for ' + type + ' payment...');
+  }
+
+  // Keyboard shortcut listener: F2 or Cmd+K to focus SKU bar
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'F2' || ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k')) {
+      e.preventDefault();
+      document.getElementById('skuInput').focus();
+    }
+  });
+</script></main></div>
+
+</body></html>
