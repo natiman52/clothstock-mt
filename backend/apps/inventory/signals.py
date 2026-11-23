@@ -244,28 +244,28 @@ def store_inventory_saved_handler(sender, instance, created, **kwargs):
 # StockLedgerEntry Signals (Web Admin Adjustments)
 # ─────────────────────────────────────────────────────────────────────────────
 
-@receiver(post_save, sender=StockLedgerEntry)
-def stock_ledger_saved_handler(sender, instance, created, **kwargs):
-    if not created or _server_events_suppressed() or getattr(instance, '_skip_server_event', False):
-        return
+#@receiver(post_save, sender=StockLedgerEntry)
+#def stock_ledger_saved_handler(sender, instance, created, **kwargs):
+#    if not created or _server_events_suppressed() or getattr(instance, '_skip_server_event', False):
+#        return
 
     # If created directly on the server (e.g. Web Admin) without an attached server_event
-    if instance.sync_source == StockLedgerEntry.SyncSource.WEB_ADMIN and not instance.server_event_id:
-        payload = {
-            'ledger_id': instance.id,
-            'store_id': instance.store_id,
-            'store_code': instance.store.code if instance.store else 'STORAGE',
-            'variant_id': str(instance.variant_id),
-            'variant_sku': instance.variant.sku,
-            'delta': instance.delta,
-            'resulting_balance': instance.resulting_balance,
-            'reason': instance.reason,
-            'sync_source': instance.sync_source,
-            'notes': instance.notes,
-            'timestamp': instance.timestamp.isoformat() if instance.timestamp else timezone.now().isoformat(),
-        }
-        event = log_server_event(f"LEDGER_{instance.reason}", store=instance.store, payload=payload)
-        StockLedgerEntry.objects.filter(id=instance.id).update(server_event=event)
+#    if instance.sync_source == StockLedgerEntry.SyncSource.WEB_ADMIN and not instance.server_event_id:
+#        payload = {
+#            'ledger_id': instance.id,
+#            'store_id': instance.store_id,
+#            'store_code': instance.store.code if instance.store else 'STORAGE',
+#            'variant_id': str(instance.variant_id),
+#            'variant_sku': instance.variant.sku,
+#            'delta': instance.delta,
+#            'resulting_balance': instance.resulting_balance,
+#            'reason': instance.reason,
+#            'sync_source': instance.sync_source,
+#            'notes': instance.notes,
+#            'timestamp': instance.timestamp.isoformat() if instance.timestamp else timezone.now().isoformat(),
+#        }
+#        event = log_server_event(f"LEDGER_{instance.reason}", store=instance.store, payload=payload)
+#        StockLedgerEntry.objects.filter(id=instance.id).update(server_event=event)
 
 
 # ─────────────────────────────────────────────────────────────────────────────

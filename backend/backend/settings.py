@@ -27,7 +27,7 @@ SECRET_KEY = os.getenv(
 )
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("DEBUG", "True").lower() in ("true", "1", "yes")
+DEBUG = os.getenv("DEBUG", "True").lower() in ("True",'true', "1", "yes")
 
 ALLOWED_HOSTS = ['*'] if DEBUG else os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 
@@ -70,8 +70,8 @@ REST_FRAMEWORK = {
         'rest_framework.throttling.UserRateThrottle',
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'anon': '100/day',
-        'user': '1000/day',
+        'anon': '1000/day',
+        'user': '10000/day',
     },
 }
 

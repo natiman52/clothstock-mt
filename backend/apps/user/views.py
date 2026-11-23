@@ -43,7 +43,7 @@ class LoginView(APIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
         token, _ = Token.objects.get_or_create(user=user)
-        user_data = UserSerializer(user, context={'request': request}).data
+        user_data = UserSerializer(user).data
         return Response(
             {
                 "token": token.key,
@@ -93,7 +93,7 @@ class CustomObtainAuthToken(ObtainAuthToken):
         token, _ = Token.objects.get_or_create(user=user)
         return Response({
             'token': token.key,
-            'user': UserSerializer(user, context={'request': request}).data
+            'user': UserSerializer(user).data
         })
 
 
@@ -102,7 +102,7 @@ class UserViewSet(viewsets.ModelViewSet):
     CRUD endpoint for staff/user management.
     List/retrieve: any authenticated user.
     Create/update/delete: admin only.
-    GET  /api/users/          – list all users (supports ?search=, ?is_staff=, ?is_active=)
+    GET  /api/users/          – list all users (supports ?search=, ?is_staff=, ?is_active=,?status=)
     GET  /api/users/:id/      – retrieve single user
     POST /api/users/          – create user (admin)
     PATCH/PUT /api/users/:id/ – update user (admin)
@@ -128,6 +128,11 @@ class UserViewSet(viewsets.ModelViewSet):
         is_superuser = self.request.query_params.get('is_superuser')
         if is_superuser is not None:
             qs = qs.filter(is_superuser=is_superuser.lower() in ('true', '1', 'yes'))
+        status = self.request.query_params.get("status")
+        if status == User.Status.OWNER.lower:
+            qs = qs.filter(status=User.Status.OWNER)
+        elif status == User.Status.WORKER.lower:
+            qs = qs.filter(status=User.Status.WORKER)
         return qs
 
     def get_permissions(self):
@@ -137,7 +142,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         """Create user via RegisterSerializer to handle password hashing."""
-        serializer = RegisterSerializer(data=request.data, context={'request': request})
+        serializer = RegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)

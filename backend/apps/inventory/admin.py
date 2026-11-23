@@ -54,7 +54,7 @@ class StoreInventoryAdmin(admin.ModelAdmin):
         return obj.variant.product.name
 @admin.register(Category)
 class CatagoryAdmin(admin.ModelAdmin):
-    list_display=("name",)
+    list_display=("code","name",)
 
 @admin.register(ServerEvent)
 class ServerEventAdmin(admin.ModelAdmin):
@@ -100,7 +100,11 @@ class StockLedgerEntryAdmin(admin.ModelAdmin):
 
     @admin.display(description='SKU', ordering='variant__sku')
     def get_sku(self, obj):
-        return obj.variant.sku
+        if hasattr(obj.variant,"sku"):
+            sku = obj.variant.sku 
+        else:
+            sku = "xxx-xxx-xxxxx"
+        return sku
 
 @admin.register(Sale)
 class SaleAdmin(admin.ModelAdmin):

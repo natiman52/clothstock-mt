@@ -395,7 +395,7 @@ class StockLedgerEntry(models.Model):
             sku = self.variant.sku 
         else:
             sku = "xxx-xxx-xxxxx"
-        return f"{self.store.code} | {sku}: {sign}{self.delta} -> {self.resulting_balance} ({self.reason})"
+        return f"{self.id} | {sku}: {sign}{self.delta} -> {self.resulting_balance} ({self.reason})"
 
 
 # ─────────────────────────────────────────────────────────────────────────────
