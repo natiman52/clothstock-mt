@@ -301,6 +301,27 @@ class SyncEvent(models.Model):
         return f"SyncEvent {self.event_id} ({self.store.code}) [{self.status}] {self.event_type}"
 
 
+class StoreSyncState(models.Model):
+    """Last known sync state and per-device signing key for one store terminal."""
+    store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name='sync_states')
+    device_id = models.CharField(max_length=128)
+    device_secret = models.CharField(max_length=128)
+    app_version = models.CharField(max_length=64, blank=True, default='')
+    last_applied_seq = models.PositiveBigIntegerField(default=0)
+    last_seen_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['store', 'device_id'], name='unique_store_sync_device'),
+        ]
+        indexes = [models.Index(fields=['store', 'last_seen_at'])]
+
+    def __str__(self):
+        return f"{self.store.code} / {self.device_id}"
+
+
 class StockLedgerEntry(models.Model):
     """
     StockLedgerEntry records every immutable stock delta (+ or -), resulting balance,

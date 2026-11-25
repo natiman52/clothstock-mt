@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "file_type": "clothstock.sync-confirm",
+  "confirm_id": "6a94194d-511f-47a6-a4be-9fd8e01ec5f0",
+  "batch_id": "62c87f20-e1bf-4e31-bf51-5c137f638156",
+  "store_id": "12",
+  "device_id": "pos-7b6a74cb-9425-46ad-b24d-03b2f957fc19",
+  "issued_at": "2026-11-23T20:30:02Z",
+  "checkpoint": {"sync_version": 1, "last_applied_seq": 42},
+  "acknowledged_events": [
+    {"event_id": "cd91f48c-cab9-4bf0-85fb-511dce17d031", "local_seq": 107}
+  ],
+  "server_events": [
+    {
+      "seq_id": 42,
+      "store_id": 12,
+      "event_type": "VARIANT_UPDATED",
+      "payload": {
+        "id": "09f620a8-2584-48b0-8aa1-258f25a85db8",
+        "price": "19.99"
+      },
+      "created_at": "2026-11-23T20:27:00Z"
+    }
+  ],
+  "signature": {"algorithm": "HMAC-SHA256", "value": "<generated-by-server>"}
+}

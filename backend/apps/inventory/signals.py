@@ -2,7 +2,7 @@ import logging
 from contextlib import contextmanager
 from contextvars import ContextVar
 
-from django.db.models.signals import post_save, post_delete
+from django.db.models.signals import post_save, post_delete, pre_save
 from django.dispatch import receiver
 from django.utils import timezone
 
@@ -221,23 +221,47 @@ def store_deleted_handler(sender, instance, **kwargs):
 # StoreInventory Signals (Server-Side Transfers & Adjustments)
 # ─────────────────────────────────────────────────────────────────────────────
 
+@receiver(pre_save, sender=StoreInventory)
+def remember_previous_inventory_quantity(sender, instance, **kwargs):
+    if (
+        instance.pk is None
+        or _server_events_suppressed()
+        or getattr(instance, '_skip_server_event', False)
+    ):
+        instance._previous_quantity_on_hand = 0
+        return
+
+    instance._previous_quantity_on_hand = (
+        sender.objects.filter(pk=instance.pk)
+        .values_list('quantity_on_hand', flat=True)
+        .first()
+    )
+
+
 @receiver(post_save, sender=StoreInventory)
-def store_inventory_saved_handler(sender, instance, created, **kwargs):
+def store_inventory_saved_handler(sender, instance, **kwargs):
     # If the change originated from an incoming store sync mutation, skip logging
     # to avoid echoing the store's own transaction back to itself.
     if _server_events_suppressed() or getattr(instance, '_skip_server_event', False):
         return
 
-    event_type = 'STOCK_TRANSFER' if created else 'INVENTORY_UPDATED'
+    previous_quantity = getattr(instance, '_previous_quantity_on_hand', 0)
+    if previous_quantity is None:
+        previous_quantity = 0
+    delta = instance.quantity_on_hand - previous_quantity
+    if delta == 0:
+        return
+
     payload = {
         'store_id': instance.store_id,
         'store_code': instance.store.code if instance.store else 'STORAGE',
         'variant_id': str(instance.variant_id),
         'variant_sku': instance.variant.sku,
-        'quantity_on_hand': instance.quantity_on_hand,
+        'delta': delta,
+        'resulting_balance': instance.quantity_on_hand,
         'updated_at': instance.updated_at.isoformat() if instance.updated_at else timezone.now().isoformat(),
     }
-    log_server_event(event_type, store=instance.store, payload=payload)
+    log_server_event('INVENTORY_DELTA', store=instance.store, payload=payload)
 
 
 # ─────────────────────────────────────────────────────────────────────────────

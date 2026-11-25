@@ -138,6 +138,85 @@ class StoreInventorySerializer(serializers.ModelSerializer):
         return obj.store is None or bool(obj.store.is_warehouse)
 
 
+class InventoryWorkflowSerializer(serializers.Serializer):
+    product_id = serializers.PrimaryKeyRelatedField(
+        source='product',
+        queryset=Product.objects.all(),
+    )
+    variant_id = serializers.PrimaryKeyRelatedField(
+        source='variant',
+        queryset=Variant.objects.all(),
+    )
+    store_id = serializers.PrimaryKeyRelatedField(
+        source='store',
+        queryset=Store.objects.all(),
+        allow_null=True,
+    )
+    action = serializers.ChoiceField(choices=('create', 'update'))
+    inventory_id = serializers.PrimaryKeyRelatedField(
+        source='inventory',
+        queryset=StoreInventory.objects.select_related('variant', 'store'),
+        required=False,
+    )
+    quantity_on_hand = serializers.IntegerField()
+    notes = serializers.CharField(required=False, allow_blank=True, default='')
+
+    def validate(self, attrs):
+        product = attrs['product']
+        variant = attrs['variant']
+        store = attrs['store']
+        action = attrs['action']
+        inventory = attrs.get('inventory')
+
+        if variant.product_id != product.pk:
+            raise serializers.ValidationError({
+                'variant_id': {
+                    'code': 'product_mismatch',
+                    'detail': 'The selected variant does not belong to the selected product.',
+                }
+            })
+
+        if action == 'update':
+            if inventory is None:
+                raise serializers.ValidationError({
+                    'inventory_id': {
+                        'code': 'required_for_update',
+                        'detail': 'Select an existing stock record to update.',
+                    }
+                })
+            if inventory.variant_id != variant.pk:
+                raise serializers.ValidationError({
+                    'inventory_id': {
+                        'code': 'variant_mismatch',
+                        'detail': 'The selected stock record belongs to a different variant.',
+                    }
+                })
+            if inventory.store_id != (store.pk if store else None):
+                raise serializers.ValidationError({
+                    'inventory_id': {
+                        'code': 'store_mismatch',
+                        'detail': 'The selected stock record belongs to a different location.',
+                    }
+                })
+        else:
+            if inventory is not None:
+                raise serializers.ValidationError({
+                    'inventory_id': {
+                        'code': 'not_allowed_for_create',
+                        'detail': 'Do not select an existing stock record when creating one.',
+                    }
+                })
+            if StoreInventory.objects.filter(store=store, variant=variant).exists():
+                raise serializers.ValidationError({
+                    'action': {
+                        'code': 'stock_record_exists',
+                        'detail': 'A stock record already exists for this variant and location. Select it to update.',
+                    }
+                })
+
+        return attrs
+
+
 class TransferInventorySerializer(serializers.Serializer):
     variant_id = serializers.CharField(help_text="Variant UUID, SKU, or Barcode")
     from_store = serializers.CharField(required=False, allow_null=True, allow_blank=True, default=None, help_text="Source store ID/code or null/storage for warehouse")
@@ -195,6 +274,44 @@ class SyncEventSerializer(serializers.ModelSerializer):
             'created_at',
         ]
         read_only_fields = ['processed_at', 'created_at']
+
+
+class SyncSignatureSerializer(serializers.Serializer):
+    algorithm = serializers.ChoiceField(choices=['HMAC-SHA256'])
+    value = serializers.RegexField(regex=r'^[a-f0-9]{64}$')
+
+
+class StoreExportEventSerializer(serializers.Serializer):
+    event_id = serializers.UUIDField()
+    local_seq = serializers.IntegerField(min_value=0, required=False, allow_null=True)
+    event_type = serializers.CharField(max_length=100)
+    created_at = serializers.DateTimeField()
+    payload = serializers.DictField()
+
+
+class StoreExportSerializer(serializers.Serializer):
+    schema_version = serializers.ChoiceField(choices=['1.0'])
+    file_type = serializers.ChoiceField(choices=['clothstock.store-export'])
+    batch_id = serializers.UUIDField()
+    store_id = serializers.CharField(max_length=100)
+    device_id = serializers.CharField(max_length=128)
+    app_version = serializers.CharField(max_length=64, allow_blank=True)
+    exported_at = serializers.DateTimeField()
+    last_applied_seq = serializers.IntegerField(min_value=0)
+    pending_events = StoreExportEventSerializer(many=True, max_length=1000)
+    signature = SyncSignatureSerializer()
+
+
+class SyncRegisterSerializer(serializers.Serializer):
+    store_id = serializers.CharField(max_length=100)
+    device_id = serializers.CharField(max_length=128)
+    app_version = serializers.CharField(max_length=64, required=False, allow_blank=True, default='')
+
+
+class SyncStateUpdateSerializer(serializers.Serializer):
+    device_id = serializers.CharField(max_length=128)
+    last_applied_seq = serializers.IntegerField(min_value=0)
+    app_version = serializers.CharField(max_length=64, required=False, allow_blank=True)
 
 
 class StockLedgerEntrySerializer(serializers.ModelSerializer):

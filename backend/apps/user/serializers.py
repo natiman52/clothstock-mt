@@ -17,13 +17,14 @@ class UserSerializer(serializers.ModelSerializer):
             'first_name',
             'last_name',
             'status',
+            'stores',
             'is_staff',
             'is_superuser',
             'is_active',
             'last_login',
             'date_joined',
         ]
-        read_only_fields = ['id', 'is_staff','is_superuser', 'date_joined', 'last_login']
+        read_only_fields = ['id', 'stores', 'is_staff','is_superuser', 'date_joined', 'last_login']
 
 
 class RegisterSerializer(serializers.ModelSerializer):

@@ -1,5 +1,6 @@
 import uuid
 import logging
+from decimal import Decimal
 from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
@@ -12,8 +13,10 @@ from .models import (
     SyncEvent,
     ServerEvent,
     StockLedgerEntry,
+    Sale,
+    SaleItem,
 )
-from .signals import suppress_server_events
+from .signals import suppress_server_events, log_server_event
 
 logger = logging.getLogger(__name__)
 
@@ -90,18 +93,20 @@ def process_single_sync_event(event_data, default_store, sync_source):
     Returns: (event_id_str, was_skipped, error_detail)
     """
     raw_event_id = event_data.get('event_id')
+    NAMESPACE_SYNC = uuid.UUID('6ba7c100-9dbd-12d3-80b4-00c60fd430c8')
     if raw_event_id:
         try:
             event_id = uuid.UUID(str(raw_event_id))
         except (ValueError, AttributeError):
-            event_id = uuid.uuid4()
+            event_id = uuid.uuid5(NAMESPACE_SYNC,str(raw_event_id))
     else:
         event_id = uuid.uuid4()
 
     event_id_str = str(event_id)
 
     # 1. Idempotency Check: skip already processed event_id
-    if SyncEvent.objects.filter(event_id=event_id).exists():
+    existing_event = SyncEvent.objects.filter(event_id=event_id).first()
+    if existing_event:
         return event_id_str, True, None
 
     # 2. Resolve Store
@@ -143,6 +148,7 @@ def process_single_sync_event(event_data, default_store, sync_source):
         sync_event._skip_ledger_entry = True
         sync_event.save()
 
+        ledger_entries_by_variant = {}
         for item in items:
             variant = resolve_variant(item)
             if not variant:
@@ -188,7 +194,7 @@ def process_single_sync_event(event_data, default_store, sync_source):
             unit_cost = item.get('unit_cost') or item.get('cost') or variant.cost
 
             # Record immutable StockLedgerEntry
-            StockLedgerEntry.objects.create(
+            ledger_entry = StockLedgerEntry.objects.create(
                 store=store,
                 variant=variant,
                 delta=delta,
@@ -201,6 +207,110 @@ def process_single_sync_event(event_data, default_store, sync_source):
                 sync_event=sync_event,
                 notes=notes,
             )
+            ledger_entries_by_variant.setdefault(variant.pk, []).append(ledger_entry)
+
+            # Emit a device-aware inventory delta, rather than relying on the
+            # StoreInventory post-save signal's absolute snapshot. This lets an
+            # offline POS merge the server-side result without replaying stale
+            # absolute quantities over its own pending checkout.
+            log_server_event(
+                'INVENTORY_DELTA',
+                store=store,
+                payload={
+                    'store_id': str(store.pk),
+                    'store_code': store.code,
+                    'variant_id': str(variant.pk),
+                    'variant_sku': variant.sku,
+                    'delta': delta,
+                    'resulting_balance': resulting_balance,
+                    'origin_event_id': event_id_str,
+                    'timestamp': event_timestamp.isoformat(),
+                },
+            )
+
+        sale_record = payload.get('sale_record')
+        if event_type in ('SALE', 'ORDER') and isinstance(sale_record, dict):
+            raw_sale_id = sale_record.get('id') or payload.get('sale_id')
+            try:
+                sale_id = uuid.UUID(str(raw_sale_id))
+            except (ValueError, TypeError, AttributeError):
+                raise ValueError(f"Invalid sale ID in sync event: {raw_sale_id!r}")
+
+            sale_timestamp = parse_datetime(
+                str(sale_record.get('sold_at') or raw_timestamp or '')
+            ) or event_timestamp
+            sale = Sale.objects.create(
+                id=sale_id,
+                store=store,
+                sync_event=sync_event,
+                receipt_number=sale_record.get('receipt_number', ''),
+                sold_at=sale_timestamp,
+                payment_method=sale_record.get('payment_method', Sale.PaymentMethod.CASH),
+                status=sale_record.get('status', Sale.Status.COMPLETED),
+                subtotal=sale_record.get('subtotal', 0),
+                discount_amount=sale_record.get('discount_amount', 0),
+                tax_amount=sale_record.get('tax_amount', 0),
+                total_amount=sale_record.get('total_amount', 0),
+                cashier_name=sale_record.get('cashier_name', ''),
+                customer_name=sale_record.get('customer_name', ''),
+                notes=sale_record.get('notes', ''),
+            )
+
+            sale_items = sale_record.get('items', [])
+            if not isinstance(sale_items, list) or not sale_items:
+                raise ValueError("Sale sync record must include at least one item")
+
+            for sale_item in sale_items:
+                if not isinstance(sale_item, dict):
+                    raise ValueError(f"Invalid sale item in sync record: {sale_item!r}")
+                variant = resolve_variant(sale_item)
+                if not variant:
+                    raise ValueError(
+                        f"Sale variant not found for sync item: {sale_item!r}"
+                    )
+
+                quantity = abs(int(sale_item.get('quantity', 0)))
+                if quantity == 0:
+                    raise ValueError(f"Sale item quantity must be non-zero: {sale_item!r}")
+
+                raw_unit_price = sale_item.get('unit_price')
+                raw_unit_cost = sale_item.get('unit_cost')
+                raw_discount = sale_item.get('discount_amount')
+                unit_price = Decimal(str(
+                    variant.price if raw_unit_price is None else raw_unit_price
+                ))
+                unit_cost = Decimal(str(
+                    variant.cost if raw_unit_cost is None else raw_unit_cost
+                ))
+                discount_amount = Decimal(str(
+                    0 if raw_discount is None else raw_discount
+                ))
+                raw_line_total = sale_item.get('line_total')
+                line_total = Decimal(str(
+                    (unit_price * quantity) - discount_amount
+                    if raw_line_total is None
+                    else raw_line_total
+                ))
+                variant_ledger_entries = ledger_entries_by_variant.get(variant.pk, [])
+                ledger_entry = next(
+                    (entry for entry in variant_ledger_entries if entry.delta == -quantity),
+                    None,
+                )
+                if ledger_entry is None:
+                    raise ValueError(
+                        f"Sale item has no matching inventory event: {sale_item!r}"
+                    )
+                variant_ledger_entries.remove(ledger_entry)
+                SaleItem.objects.create(
+                    sale=sale,
+                    variant=variant,
+                    quantity=quantity,
+                    unit_price=unit_price,
+                    unit_cost=unit_cost,
+                    discount_amount=discount_amount,
+                    line_total=line_total,
+                    ledger_entry=ledger_entry,
+                )
 
     return event_id_str, False, None
 
@@ -244,18 +354,23 @@ def process_sync_batch(events_data, default_store, sync_source):
     }
 
 
-def get_server_events_for_store(store_identifier, after_seq=0, limit=500):
+def server_events_for_store_queryset(store_identifier):
     """
-    Retrieve ServerEvents with seq_id > after_seq that match store_id or store IS NULL.
+    Retrieve events for one store plus truly global events. Warehouse events also
+    have a null FK, so exclude them using their explicit STORAGE payload scope.
     """
-    queryset = ServerEvent.objects.filter(seq_id__gt=after_seq)
-
     store = resolve_store(store_identifier) if store_identifier else None
+    global_events = Q(store__isnull=True) & ~Q(payload__store_code='STORAGE')
     if store:
-        queryset = queryset.filter(Q(store=store) | Q(store__isnull=True))
-    else:
-        # Global events only if no store specified
-        queryset = queryset.filter(store__isnull=True)
+        return ServerEvent.objects.filter(Q(store=store) | global_events)
+    return ServerEvent.objects.filter(global_events)
+
+
+def get_server_events_for_store(store_identifier, after_seq=0, limit=500):
+    """Return one store's ordered events and global events after a sequence."""
+    queryset = server_events_for_store_queryset(store_identifier).filter(
+        seq_id__gt=after_seq
+    )
 
     limit = max(1, min(limit, 1000))
     return list(queryset.select_related('store').order_by('seq_id')[:limit])

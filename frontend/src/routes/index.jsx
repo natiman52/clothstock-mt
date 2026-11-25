@@ -24,6 +24,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
 import PublicRoute    from './PublicRoute';
+import OwnerRoute        from './OwnerRoute';
 
 // Pages
 import LoginPage           from '../pages/LoginPage';
@@ -40,6 +41,8 @@ import StoresPage          from '../pages/StoresPage';
 import CreateProductPage   from '../pages/CreateProductPage';
 import CreateVariantPage   from '../pages/CreateVariantPage';
 import InventoryAdjustPage from '../pages/InventoryAdjustPage';
+import InventoryWorkflowPage from '../pages/InventoryWorkflowPage';
+import SyncExportPage      from '../pages/SyncExportPage';
 
 export default function AppRoutes() {
   return (
@@ -64,7 +67,11 @@ export default function AppRoutes() {
           <Route path="categories" element={<CategoriesPage />} />
           <Route path="stores" element={<StoresPage />} />
           <Route path="inventory" element={<InventoryAdjustPage />} />
+          <Route path="inventory/workflow" element={<InventoryWorkflowPage />} />
           <Route path="ledger" element={<LedgerPage />} />
+          <Route element={<OwnerRoute />}>
+            <Route path="sync" element={<SyncExportPage />} />
+          </Route>
         </Route>
       </Route>
 

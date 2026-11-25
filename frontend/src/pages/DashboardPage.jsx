@@ -5,7 +5,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import apiClient from '../api/client';
 
 export function DashboardPage() {
-  const { user, logout } = useAuth();
+  const { user, isOwner, logout } = useAuth();
   const { activeStore, setActiveStore, storesList } = useStore();
   const location = useLocation();
   const queryClient = useQueryClient();
@@ -45,7 +45,14 @@ export function DashboardPage() {
           ADJUST
         </span>
       ),
-      isActive: location.pathname.startsWith('/inventory'),
+      isActive: location.pathname === '/inventory',
+    },
+    {
+      to: '/inventory/workflow',
+      label: 'Product to stock',
+      icon: 'add_box',
+      badge: null,
+      isActive: location.pathname === '/inventory/workflow',
     },
     {
       to: '/catalog',
@@ -90,6 +97,15 @@ export function DashboardPage() {
       badge: <span className="w-2 h-2 rounded-full bg-error animate-pulse" />,
       isActive: location.pathname.startsWith('/ledger'),
     },
+    ...(isOwner
+      ? [{
+          to: '/sync',
+          label: 'Store Sync',
+          icon: 'sync',
+          badge: null,
+          isActive: location.pathname.startsWith('/sync'),
+        }]
+      : []),
   ];
 
   return (

@@ -1,0 +1,11 @@
+{
+  "schema_version": "1.0",
+  "file_type": "clothstock.confirm-receipt",
+  "confirm_id": "6a94194d-511f-47a6-a4be-9fd8e01ec5f0",
+  "batch_id": "62c87f20-e1bf-4e31-bf51-5c137f638156",
+  "store_id": "12",
+  "device_id": "pos-7b6a74cb-9425-46ad-b24d-03b2f957fc19",
+  "applied_at": "2026-11-23T20:30:04Z",
+  "last_applied_seq": 42,
+  "signature": {"algorithm": "HMAC-SHA256", "value": "<generated-by-device>"}
+}

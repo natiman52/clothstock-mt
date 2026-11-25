@@ -1,11 +1,14 @@
 import json
+import secrets
 from rest_framework import viewsets, permissions, filters, status
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.views import APIView
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from django_filters.rest_framework import DjangoFilterBackend
-from django.db import transaction, models
+from django.db import IntegrityError, transaction, models
 from django.db.models import Sum, Count, F, Q
 from django.utils import timezone
 from datetime import timedelta
@@ -18,6 +21,7 @@ from .models import (
     StoreInventory,
     ServerEvent,
     SyncEvent,
+    StoreSyncState,
     StockLedgerEntry,
     Sale,
     SaleItem,
@@ -28,10 +32,14 @@ from .serializers import (
     ProductSerializer,
     VariantSerializer,
     StoreInventorySerializer,
+    InventoryWorkflowSerializer,
     TransferInventorySerializer,
     AdjustInventorySerializer,
     ServerEventSerializer,
     SyncEventSerializer,
+    StoreExportSerializer,
+    SyncRegisterSerializer,
+    SyncStateUpdateSerializer,
     StockLedgerEntrySerializer,
     SaleSerializer,
     SaleWriteSerializer,
@@ -42,15 +50,17 @@ from .sync_service import (
     process_sync_batch,
     resolve_store,
     resolve_variant,
+    server_events_for_store_queryset,
 )
 from .signals import log_server_event
 from .filters import StoreScopeFilterBackend, resolve_store_from_request
+from .sync_signatures import verify_document
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.prefetch_related('products').all()
     serializer_class = CategorySerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.IsAuthenticated]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'code', 'description']
     ordering_fields = ['name', 'code', 'created_at']
@@ -63,6 +73,16 @@ class StoreViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'code']
     ordering_fields = ['name', 'code', 'created_at']
+
+    def get_queryset(self):
+        if not self.request.user.is_authenticated or self.request.user.is_superuser:
+            return Store.objects.all()
+        return self.request.user.stores.all()
+
+    def perform_create(self, serializer):
+        store = serializer.save()
+        if self.request.user.is_authenticated and not self.request.user.is_superuser:
+            self.request.user.stores.add(store)
 
 
 class ProductViewSet(viewsets.ModelViewSet):
@@ -85,6 +105,28 @@ class VariantViewSet(viewsets.ModelViewSet):
     ordering_fields = ['sku', 'price', 'created_at']
 
 
+class StoreInventoryPagination(PageNumberPagination):
+    page_size = 5
+    page_size_query_param = 'page_size'
+    # Enforce the stock-list response limit even when clients request larger pages.
+    max_page_size = 5
+
+    def get_paginated_response(self, data):
+        total_pages = max(
+            1,
+            (self.page.paginator.count + self.page_size - 1) // self.page_size,
+        )
+        return Response({
+            'count': self.page.paginator.count,
+            'current_page': self.page.number,
+            'total_pages': total_pages,
+            'page_size': self.page_size,
+            'next': self.get_next_link(),
+            'previous': self.get_previous_link(),
+            'results': data,
+        })
+
+
 class StoreInventoryViewSet(viewsets.ModelViewSet):
     """
     StoreInventory tracking. By default in multi-store mode, filters out unassigned
@@ -96,9 +138,120 @@ class StoreInventoryViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     filter_backends = [StoreScopeFilterBackend, DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['store', 'variant']
-    search_fields = ['store__name', 'store__code', 'variant__sku', 'variant__barcode', 'variant__product__name']
-    ordering_fields = ['quantity_on_hand', 'updated_at']
+    search_fields = [
+        'store__name',
+        'store__code',
+        'variant__sku',
+        'variant__barcode',
+        'variant__size',
+        'variant__color',
+        'variant__product__name',
+    ]
+    ordering_fields = ['quantity_on_hand', 'updated_at', 'variant__product__name', 'variant__sku']
+    pagination_class = StoreInventoryPagination
     exclude_storage_by_default = False
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        category_id = self.request.query_params.get('category')
+        if category_id:
+            if not category_id.isdigit():
+                raise ValidationError({
+                    'category': {
+                        'code': 'invalid_id',
+                        'detail': 'Category must be an integer ID.',
+                    }
+                })
+            queryset = queryset.filter(variant__product__category_id=category_id)
+
+        status_filter = self.request.query_params.get('stock_status')
+        if status_filter == 'in-stock':
+            queryset = queryset.filter(quantity_on_hand__gt=5)
+        elif status_filter == 'low-stock':
+            queryset = queryset.filter(quantity_on_hand__gt=0, quantity_on_hand__lte=5)
+        elif status_filter == 'out-of-stock':
+            queryset = queryset.filter(quantity_on_hand__lte=0)
+        elif status_filter not in (None, '', 'all'):
+            raise ValidationError({
+                'stock_status': {
+                    'code': 'invalid_choice',
+                    'detail': 'Expected all, in-stock, low-stock, or out-of-stock.',
+                }
+            })
+        return queryset
+
+    @action(detail=False, methods=['post'], url_path='workflow')
+    def workflow(self, request):
+        """Create or update a stock record after validating its product/variant path."""
+        serializer = InventoryWorkflowSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        values = serializer.validated_data
+
+        try:
+            with transaction.atomic():
+                if values['action'] == 'update':
+                    inventory = StoreInventory.objects.select_for_update().get(
+                        pk=values['inventory'].pk
+                    )
+                    previous_balance = inventory.quantity_on_hand
+                else:
+                    inventory = StoreInventory(
+                        store=values['store'],
+                        variant=values['variant'],
+                    )
+                    previous_balance = 0
+
+                inventory.quantity_on_hand = values['quantity_on_hand']
+                inventory._skip_server_event = True
+                inventory.save()
+                delta = values['quantity_on_hand'] - previous_balance
+
+                if delta or values['action'] == 'create':
+                    ledger = StockLedgerEntry.objects.create(
+                        store=values['store'],
+                        variant=values['variant'],
+                        delta=delta,
+                        resulting_balance=values['quantity_on_hand'],
+                        unit_price=values['variant'].price,
+                        unit_cost=values['variant'].cost,
+                        reason=StockLedgerEntry.Reason.STOCK_ADJUSTMENT,
+                        sync_source=StockLedgerEntry.SyncSource.WEB_ADMIN,
+                        notes=values['notes'] or 'Guided inventory workflow adjustment',
+                    )
+                    event = log_server_event(
+                        f'LEDGER_{StockLedgerEntry.Reason.STOCK_ADJUSTMENT}',
+                        store=values['store'],
+                        payload={
+                            'store_id': values['store'].pk if values['store'] else None,
+                            'store_code': values['store'].code if values['store'] else 'STORAGE',
+                            'variant_id': str(values['variant'].pk),
+                            'variant_sku': values['variant'].sku,
+                            'previous_balance': previous_balance,
+                            'delta': delta,
+                            'resulting_balance': values['quantity_on_hand'],
+                            'reason': StockLedgerEntry.Reason.STOCK_ADJUSTMENT,
+                            'ledger_id': ledger.pk,
+                        },
+                    )
+                    ledger.server_event = event
+                    ledger.save(update_fields=['server_event'])
+        except IntegrityError:
+            if values['action'] == 'create' and StoreInventory.objects.filter(
+                store=values['store'],
+                variant=values['variant'],
+            ).exists():
+                raise ValidationError({
+                    'action': {
+                        'code': 'stock_record_exists',
+                        'detail': 'A stock record was created for this variant and location at the same time. Select it to update.',
+                    }
+                })
+            raise
+
+        return Response(
+            StoreInventorySerializer(inventory).data,
+            status=status.HTTP_200_OK if values['action'] == 'update' else status.HTTP_201_CREATED,
+        )
 
     @action(detail=False, methods=['get'], url_path='storage')
     def storage(self, request):
@@ -106,9 +259,9 @@ class StoreInventoryViewSet(viewsets.ModelViewSet):
         GET /api/inventory/storage/
         Exclusively returns Central Warehouse Storage inventory (where store is null).
         """
-        storage_qs = StoreInventory.objects.filter(
+        storage_qs = self.filter_queryset(self.get_queryset().filter(
             Q(store__isnull=True) | Q(store__is_warehouse=True)
-        ).select_related('store', 'variant', 'variant__product')
+        ).select_related('store', 'variant', 'variant__product'))
         page = self.paginate_queryset(storage_qs)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
@@ -220,11 +373,14 @@ class StoreInventoryViewSet(viewsets.ModelViewSet):
             event_payload = {
                 'variant_id': str(variant.id),
                 'variant_sku': variant.sku,
+                'store_id': to_store.id if to_store else None,
+                'store_code': to_store.code if to_store else 'STORAGE',
                 'from_store_id': from_store.id if from_store else None,
                 'from_store_code': from_store.code if from_store else 'STORAGE',
                 'to_store_id': to_store.id if to_store else None,
                 'to_store_code': to_store.code if to_store else 'STORAGE',
-                'quantity': qty,
+                'delta': qty,
+                'resulting_balance': to_inv.quantity_on_hand,
                 'from_balance': from_inv.quantity_on_hand,
                 'to_balance': to_inv.quantity_on_hand,
             }
@@ -357,19 +513,28 @@ class ServerEventViewSet(viewsets.ModelViewSet):
     """
     queryset = ServerEvent.objects.select_related('store').all()
     serializer_class = ServerEventSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ['store', 'event_type']
     ordering_fields = ['seq_id', 'created_at']
 
     def get_queryset(self):
-        qs = super().get_queryset()
+        device_id = self.request.query_params.get('device_id', '').strip()
+        if not device_id:
+            raise ValidationError({"device_id": "This query parameter is required."})
+        states = StoreSyncState.objects.select_related('store').filter(device_id=device_id)
+        if not self.request.user.is_superuser:
+            states = states.filter(store__in=self.request.user.stores.all())
+        if states.count() != 1:
+            raise PermissionDenied("Registered device was not found for an assigned store.")
+        store = states.first().store
+        qs = server_events_for_store_queryset(store)
         since_seq = self.request.query_params.get('since_seq')
         if since_seq is not None:
             try:
                 qs = qs.filter(seq_id__gt=int(since_seq))
-            except ValueError:
-                pass
+            except ValueError as exc:
+                raise ValidationError({"since_seq": "Must be an integer."}) from exc
         return qs
 
 
@@ -380,11 +545,17 @@ class SyncEventViewSet(viewsets.ModelViewSet):
     """
     queryset = SyncEvent.objects.select_related('store').all()
     serializer_class = SyncEventSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['store', 'status', 'event_type']
     search_fields = ['event_type', 'store__name', 'store__code']
     ordering_fields = ['created_at', 'processed_at']
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if not self.request.user.is_superuser:
+            qs = qs.filter(store__in=self.request.user.stores.all())
+        return qs
 
 
 class StockLedgerEntryViewSet(viewsets.ReadOnlyModelViewSet):
@@ -406,35 +577,54 @@ class StockLedgerEntryViewSet(viewsets.ReadOnlyModelViewSet):
 # ─────────────────────────────────────────────────────────────────────────────
 
 class SyncPullView(APIView):
-    """
-    Pull: GET /api/sync/pull/
-    Returns ServerEvent rows with seq_id > after_seq matching store_id or store IS NULL,
-    ordered by seq_id and paginated up to 500 rows.
-    """
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    """Pull ordered events scoped to the authenticated registered device's store."""
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         try:
-            after_seq = int(request.query_params.get('after_seq', 0))
+            after_seq = int(request.query_params.get('after_seq', '0'))
+            limit = int(request.query_params.get('limit', '500'))
         except (ValueError, TypeError):
-            after_seq = 0
+            return Response(
+                {"error": "after_seq and limit must be integers."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if after_seq < 0 or limit < 1:
+            return Response(
+                {"error": "after_seq must be non-negative and limit must be positive."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-        store_id = request.query_params.get('store_id') or request.query_params.get('store')
+        device_id = request.query_params.get('device_id', '').strip()
+        if not device_id:
+            return Response({"error": "device_id is required."}, status=status.HTTP_400_BAD_REQUEST)
+        states = StoreSyncState.objects.select_related('store').filter(
+            device_id=device_id,
+        )
+        if not request.user.is_superuser:
+            states = states.filter(store__in=request.user.stores.all())
+        if states.count() != 1:
+            return Response(
+                {"error": "Registered device was not found for an assigned store."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        sync_state = states.first()
 
-        try:
-            limit = int(request.query_params.get('limit', 500))
-        except (ValueError, TypeError):
-            limit = 500
-
-        events = get_server_events_for_store(store_id, after_seq=after_seq, limit=limit)
+        events = get_server_events_for_store(
+            sync_state.store, after_seq=after_seq, limit=min(limit, 1000) + 1
+        )
+        has_more = len(events) > min(limit, 1000)
+        events = events[:min(limit, 1000)]
         serialized_events = ServerEventSerializer(events, many=True).data
-
         latest_seq = events[-1].seq_id if events else after_seq
 
         return Response({
             "status": "success",
+            "store_id": str(sync_state.store_id),
             "after_seq": after_seq,
             "latest_seq": latest_seq,
+            "next_after_seq": latest_seq if has_more else None,
+            "has_more": has_more,
             "count": len(events),
             "server_events": serialized_events,
         }, status=status.HTTP_200_OK)
@@ -447,28 +637,59 @@ class SyncPushView(APIView):
     applies variant inventory deltas (allowing negative balances to be flagged
     rather than blocking sales), and writes StockLedgerEntry rows.
     """
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
-        data = request.data
-        default_store = None
-
-        if isinstance(data, list):
-            events = data
-        elif isinstance(data, dict):
-            events = data.get('events', [data])
-            default_store = data.get('store_id') or data.get('store')
-        else:
+        serializer = StoreExportSerializer(data=request.data)
+        if not serializer.is_valid():
             return Response(
-                {"error": "Invalid payload format. Expected list of events or object with 'events'."},
+                serializer.errors,
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        data = serializer.validated_data
+        store = resolve_store(data['store_id'])
+        if not store or not _user_can_access_store(request.user, store):
+            return Response(
+                {"error": "Export store was not found or is not assigned to this user."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        sync_state = StoreSyncState.objects.filter(
+            store=store, device_id=data['device_id']
+        ).first()
+        if not sync_state or not verify_document(request.data, sync_state.device_secret):
+            return Response(
+                {"error": "Device is not registered or export signature is invalid."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        conflicts = []
+        for event in data['pending_events']:
+            existing = SyncEvent.objects.filter(event_id=event['event_id']).first()
+            if existing and (
+                existing.store_id != store.pk
+                or existing.event_type != event['event_type']
+                or existing.payload != event['payload']
+            ):
+                conflicts.append(str(event['event_id']))
+        if conflicts:
+            return Response(
+                {"error": "Event IDs already exist with different contents.", "event_ids": conflicts},
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        events = [
+            {**event, "store_id": str(store.pk), "store": str(store.pk)}
+            for event in data['pending_events']
+        ]
         result = process_sync_batch(
             events_data=events,
-            default_store=default_store,
+            default_store=store,
             sync_source=StockLedgerEntry.SyncSource.AUTO_SYNC,
         )
+        sync_state.app_version = data['app_version']
+        sync_state.last_seen_at = timezone.now()
+        sync_state.save(update_fields=['app_version', 'last_seen_at', 'updated_at'])
 
         return Response({
             "status": "success",
@@ -477,6 +698,151 @@ class SyncPushView(APIView):
             "skipped_count": result["skipped_count"],
             "errors": result["errors"],
         }, status=status.HTTP_200_OK)
+
+
+def _user_can_access_store(user, store):
+    return user.is_superuser or user.stores.filter(pk=store.pk).exists()
+
+
+class SyncRegisterView(APIView):
+    """Register a terminal and establish its per-device file-signing key."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        serializer = SyncRegisterSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        data = serializer.validated_data
+        store = resolve_store(data['store_id'])
+        if not store:
+            return Response({"error": "Store was not found."}, status=status.HTTP_404_NOT_FOUND)
+        if not _user_can_access_store(request.user, store):
+            return Response({"error": "You are not assigned to this store."}, status=status.HTTP_403_FORBIDDEN)
+
+        state, created = StoreSyncState.objects.get_or_create(
+            store=store,
+            device_id=data['device_id'],
+            defaults={
+                'device_secret': secrets.token_urlsafe(32),
+                'app_version': data['app_version'],
+                'last_seen_at': timezone.now(),
+            },
+        )
+        if not created:
+            state.app_version = data['app_version']
+            state.last_seen_at = timezone.now()
+            state.save(update_fields=['app_version', 'last_seen_at', 'updated_at'])
+        return Response({
+            "store_id": str(store.pk),
+            "device_id": state.device_id,
+            "device_secret": state.device_secret,
+        }, status=status.HTTP_200_OK)
+
+
+class SyncStateView(APIView):
+    """Record a device's locally committed server-event cursor."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        serializer = SyncStateUpdateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        states = StoreSyncState.objects.select_related('store').filter(
+            device_id=data['device_id']
+        )
+        if not request.user.is_superuser:
+            states = states.filter(store__in=request.user.stores.all())
+        if states.count() != 1:
+            return Response(
+                {"error": "Registered device was not found for an assigned store."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        state = states.first()
+        latest_visible_seq = server_events_for_store_queryset(state.store).order_by(
+            '-seq_id'
+        ).values_list('seq_id', flat=True).first() or 0
+        if data['last_applied_seq'] > latest_visible_seq:
+            return Response(
+                {"error": "Reported cursor is ahead of the latest event for this store."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        with transaction.atomic():
+            state = StoreSyncState.objects.select_for_update().get(pk=state.pk)
+            state.last_applied_seq = max(state.last_applied_seq, data['last_applied_seq'])
+            if 'app_version' in data:
+                state.app_version = data['app_version']
+            state.last_seen_at = timezone.now()
+            state.save(update_fields=[
+                'last_applied_seq', 'app_version', 'last_seen_at', 'updated_at',
+            ])
+        return Response({"last_applied_seq": state.last_applied_seq})
+
+
+class ServerEventExportView(APIView):
+    """Owner-only, cursor-paginated export of server events for assigned stores."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_superuser and request.user.status != 'owner':
+            return Response({"error": "Only owners can export server events."}, status=status.HTTP_403_FORBIDDEN)
+
+        store_id = request.query_params.get('store_id', 'all').strip()
+        allowed_stores = request.user.stores.all()
+        if store_id.lower() in ('', 'all'):
+            queryset = ServerEvent.objects.all() if request.user.is_superuser else (
+                ServerEvent.objects.filter(
+                    Q(store__in=allowed_stores) | Q(store__isnull=True)
+                )
+            )
+            selected_store_id = None
+        else:
+            store = resolve_store(store_id)
+            if not store:
+                return Response({"error": "Store was not found."}, status=status.HTTP_404_NOT_FOUND)
+            if not request.user.is_superuser and not allowed_stores.filter(pk=store.pk).exists():
+                return Response({"error": "You are not assigned to this store."}, status=status.HTTP_403_FORBIDDEN)
+            queryset = server_events_for_store_queryset(store)
+            selected_store_id = store.pk
+
+        try:
+            after_seq = max(0, int(request.query_params.get('after_seq', 0)))
+            limit = max(1, min(1000, int(request.query_params.get('limit', 500))))
+        except (ValueError, TypeError):
+            return Response({"error": "after_seq and limit must be integers."}, status=status.HTTP_400_BAD_REQUEST)
+        queryset = queryset.filter(seq_id__gt=after_seq)
+        created_after = request.query_params.get('created_after')
+        created_before = request.query_params.get('created_before')
+        if created_after:
+            queryset = queryset.filter(created_at__gte=created_after)
+        if created_before:
+            queryset = queryset.filter(created_at__lte=created_before)
+
+        events = list(queryset.order_by('seq_id')[:limit + 1])
+        has_more = len(events) > limit
+        events = events[:limit]
+        latest_seq = events[-1].seq_id if events else after_seq
+        return Response({
+            "schema_version": "1.0",
+            "file_type": "clothstock.server-event-export",
+            "generated_at": timezone.now().isoformat(),
+            "store_id": selected_store_id,
+            "after_seq": after_seq,
+            "latest_seq": latest_seq,
+            "next_after_seq": latest_seq if has_more else None,
+            "has_more": has_more,
+            "count": len(events),
+            "events": [
+                {
+                    "seq_id": event.seq_id,
+                    "store_id": event.store_id,
+                    "event_type": event.event_type,
+                    "payload": event.payload,
+                    "created_at": event.created_at.isoformat(),
+                }
+                for event in events
+            ],
+        })
 
 
 class SyncBundleView(APIView):
@@ -488,7 +854,7 @@ class SyncBundleView(APIView):
     JSON with acked event_ids plus new ServerEvents (seq_id ordered) for the store
     to import back offline.
     """
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def post(self, request, *args, **kwargs):
@@ -520,13 +886,47 @@ class SyncBundleView(APIView):
                 {"error": f"Store '{store_identifier}' not found in system."},
                 status=status.HTTP_404_NOT_FOUND,
             )
+        if not _user_can_access_store(request.user, store):
+            return Response(
+                {"error": "You are not assigned to this store."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        device_id = bundle_data.get('device_id')
+        if device_id:
+            sync_state = StoreSyncState.objects.filter(
+                store=store, device_id=device_id
+            ).first()
+            if not sync_state or not verify_document(bundle_data, sync_state.device_secret):
+                return Response(
+                    {"error": "Device is not registered or export signature is invalid."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
         try:
             last_applied_seq = int(bundle_data.get('last_applied_seq', 0))
         except (ValueError, TypeError):
-            last_applied_seq = 0
+            return Response(
+                {"error": "last_applied_seq must be a non-negative integer."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if last_applied_seq < 0:
+            return Response(
+                {"error": "last_applied_seq must be a non-negative integer."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-        pending_events = bundle_data.get('events') or bundle_data.get('sync_events') or []
+        pending_events = (
+            bundle_data.get('pending_events')
+            or bundle_data.get('events')
+            or bundle_data.get('sync_events')
+            or []
+        )
+        if not isinstance(pending_events, list):
+            return Response(
+                {"error": "The bundle must contain an events array."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         # 2. Process pending SyncEvents idempotently
         result = process_sync_batch(

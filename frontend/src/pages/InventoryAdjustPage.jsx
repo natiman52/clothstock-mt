@@ -1,675 +1,401 @@
-import { useState, useMemo } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMemo, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  adjustInventory,
+  getInventory,
+  getInventoryPage,
+  getInventoryCategories,
+  getInventoryProducts,
+  getInventoryStores,
+  getInventoryVariants,
+  transferInventoryItem,
+} from '../api/inventory';
+import InventoryOverview from '../components/inventory/InventoryOverview';
+import QuickAdjustmentPanel from '../components/inventory/QuickAdjustmentPanel';
+import TransferPanel from '../components/inventory/TransferPanel';
+import CreateStockPanel from '../components/inventory/CreateStockPanel';
 import { useStore } from '../context';
-import apiClient from '../api/client';
 
-const REASON_OPTIONS = [
-  { value: 'STOCK_ADJUSTMENT', label: 'Stock Adjustment (General / Restock)' },
-  { value: 'RETURN', label: 'Customer Return' },
-  { value: 'STOCKTAKE_RECONCILIATION', label: 'Stocktake Audit Reconciliation' },
-  { value: 'WAREHOUSE_TRANSFER', label: 'Internal Location Transfer' },
-];
+const EMPTY_LIST = [];
+
+function relationId(value) {
+  if (value && typeof value === 'object') return value.id == null ? '' : String(value.id);
+  return value == null ? '' : String(value);
+}
+
+function normalizeInventory(records, variants, products, categories, stores) {
+  const variantById = new Map(variants.map((variant) => [String(variant.id), variant]));
+  const productById = new Map(products.map((product) => [String(product.id), product]));
+  const categoryById = new Map(categories.map((category) => [String(category.id), category.name]));
+  const storeById = new Map(stores.map((store) => [String(store.id), store]));
+  return records.map((record) => {
+    const variantId = relationId(record.variant);
+    const variant = variantById.get(variantId);
+    const productId = relationId(variant?.product);
+    const product = productById.get(productId);
+    const categoryId = relationId(product?.category);
+    const storeId = relationId(record.store) || 'storage';
+    const store = storeById.get(storeId);
+    return {
+      id: String(record.id),
+      variantId,
+      sku: record.variant_sku || variant?.sku || variantId,
+      barcode: record.variant_barcode || variant?.barcode || '',
+      name: record.product_name || variant?.product_name || product?.name || 'Unknown product',
+      size: record.variant_size || variant?.size || '',
+      color: record.variant_color || variant?.color || '',
+      categoryId,
+      categoryName: product?.category_name || categoryById.get(categoryId) || '',
+      quantity: Number(record.quantity_on_hand || 0),
+      storeId,
+      storeName: record.store_name || store?.name || 'Central storage',
+    };
+  });
+}
 
 export default function InventoryAdjustPage() {
   const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
   const { activeStore } = useStore();
+  const [storeId, setStoreId] = useState(() => activeStore || 'all');
+  const [categoryId, setCategoryId] = useState('all');
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('name');
+  const [inventoryPage, setInventoryPage] = useState(1);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [workflow, setWorkflow] = useState(() => (
+    searchParams.get('variant') ? 'adjust' : 'create'
+  ));
+  const [notice, setNotice] = useState('');
+  const [createStockStore, setCreateStockStore] = useState('storage');
 
-  const preselectedVariant = searchParams.get('variant') || '';
-
-  // Form states
-  const [selectedStore, setSelectedStore] = useState(() => {
-    if (activeStore && activeStore !== 'all') return activeStore;
-    return 'storage';
+  const storesQuery = useQuery({
+    queryKey: ['inventory-stores'],
+    queryFn: getInventoryStores,
+    staleTime: 60_000,
+  });
+  const variantsQuery = useQuery({
+    queryKey: ['inventory-variants'],
+    queryFn: getInventoryVariants,
+    staleTime: 60_000,
+  });
+  const productsQuery = useQuery({
+    queryKey: ['inventory-products'],
+    queryFn: getInventoryProducts,
+    staleTime: 60_000,
+  });
+  const categoriesQuery = useQuery({
+    queryKey: ['inventory-categories'],
+    queryFn: getInventoryCategories,
+    staleTime: 60_000,
+  });
+  const inventoryQuery = useQuery({
+    queryKey: ['inventory-records', 'page', storeId, inventoryPage, categoryId, search, statusFilter, sortBy],
+    queryFn: () => getInventoryPage(storeId, inventoryPage, {
+      categoryId,
+      search,
+      statusFilter,
+      sortBy,
+    }),
+    retry: 1,
+  });
+  const createStockInventoryQuery = useQuery({
+    queryKey: ['inventory-records', 'create-stock', createStockStore],
+    queryFn: () => getInventory(createStockStore),
+    enabled: workflow === 'create',
+    retry: 1,
   });
 
-  const [selectedVariantId, setSelectedVariantId] = useState(preselectedVariant);
-  const [mode, setMode] = useState('add'); // 'add' | 'subtract' | 'set'
-  const [quantity, setQuantity] = useState(10);
-  const [reason, setReason] = useState('STOCK_ADJUSTMENT');
-  const [notes, setNotes] = useState('');
+  const stores = storesQuery.data || EMPTY_LIST;
+  const variants = variantsQuery.data || EMPTY_LIST;
+  const products = productsQuery.data || EMPTY_LIST;
+  const categories = categoriesQuery.data || EMPTY_LIST;
+  const rawInventory = inventoryQuery.data?.results || EMPTY_LIST;
+  const pagination = inventoryQuery.data || {
+    current_page: 1,
+    total_pages: 0,
+    count: 0,
+  };
+  const inventory = useMemo(
+    () => normalizeInventory(rawInventory, variants, products, categories, stores),
+    [rawInventory, variants, products, categories, stores],
+  );
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [successMsg, setSuccessMsg] = useState('');
-  const [errorMsg, setErrorMsg] = useState('');
-
-  // Table filters & sorting
-  const [tableSearch, setTableSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all'); // 'all' | 'in_stock' | 'low_stock' | 'out_of_stock' | 'negative'
-  const [sortBy, setSortBy] = useState('stock_desc'); // 'stock_desc' | 'stock_asc' | 'sku_asc' | 'name_asc'
-
-  // 1. Fetch available stores
-  const { data: storesData } = useQuery({
-    queryKey: ['stores'],
-    queryFn: () => apiClient.get('/api/stores/'),
+  const [transferSource, setTransferSource] = useState('storage');
+  const transferInventoryQuery = useQuery({
+    queryKey: ['inventory-records', 'transfer-source', transferSource],
+    queryFn: () => getInventory(transferSource),
+    enabled: workflow === 'transfer',
+    retry: 1,
   });
 
-  const stores = storesData?.results || (Array.isArray(storesData) ? storesData : []);
+  const sourceRows = useMemo(
+    () => normalizeInventory(
+      transferInventoryQuery.data || EMPTY_LIST,
+      variants,
+      products,
+      categories,
+      stores,
+    ),
+    [transferInventoryQuery.data, variants, products, categories, stores],
+  );
+  const adjustedRowId = searchParams.get('variant') || '';
+  const preselectedItem = inventory.find((row) => row.variantId === adjustedRowId) || null;
+  const visibleRows = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    return inventory
+      .filter((row) => {
+        const searchable = `${row.sku} ${row.barcode} ${row.name} ${row.size} ${row.color} ${row.storeName}`.toLowerCase();
+        if (query && !searchable.includes(query)) return false;
+        if (categoryId !== 'all' && row.categoryId !== categoryId) return false;
+        if (statusFilter === 'in-stock' && row.quantity <= 5) return false;
+        if (statusFilter === 'low-stock' && (row.quantity <= 0 || row.quantity > 5)) return false;
+        if (statusFilter === 'out-of-stock' && row.quantity > 0) return false;
+        return true;
+      })
+      .sort((a, b) => {
+        if (sortBy === 'quantity-desc') return b.quantity - a.quantity;
+        if (sortBy === 'quantity-asc') return a.quantity - b.quantity;
+        if (sortBy === 'status') {
+          const rank = (quantity) => quantity <= 0 ? 0 : quantity <= 5 ? 1 : 2;
+          return rank(a.quantity) - rank(b.quantity) || a.name.localeCompare(b.name);
+        }
+        return a.name.localeCompare(b.name) || a.sku.localeCompare(b.sku);
+      });
+  }, [inventory, search, categoryId, statusFilter, sortBy]);
 
-  // 2. Fetch variants for selector
-  const { data: variantsData } = useQuery({
-    queryKey: ['variants-list'],
-    queryFn: () => apiClient.get('/api/variants/?limit=150'),
+  const invalidateInventory = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['inventory-records'] }),
+      queryClient.invalidateQueries({ queryKey: ['ledger'] }),
+      queryClient.invalidateQueries({ queryKey: ['analytics-summary'] }),
+    ]);
+  };
+  const adjustmentMutation = useMutation({
+    mutationFn: async (payload) => {
+      if (payload.type === 'subtract') {
+        const latestInventory = normalizeInventory(
+          await getInventory(payload.store),
+          variants,
+          products,
+          categories,
+          stores,
+        );
+        const latestRow = latestInventory.find((row) =>
+          row.variantId === String(payload.variantId) && row.storeId === payload.store);
+        const available = latestRow?.quantity || 0;
+        if (payload.quantity > available) {
+          throw new Error(`Stock changed before this adjustment. Only ${available} units remain.`);
+        }
+      }
+      return adjustInventory(payload);
+    },
+    onSuccess: async (response) => {
+      if (response?.inventory && selectedItem) {
+        setSelectedItem((current) => current && ({
+          ...current,
+          quantity: Number(response.inventory.resulting_balance),
+        }));
+      }
+      await invalidateInventory();
+    },
+    onError: invalidateInventory,
   });
-
-  const variants = variantsData?.results || (Array.isArray(variantsData) ? variantsData : []);
-
-  // 3. Fetch current inventory records
-  const { data: inventoryData, isLoading: loadingInventory, refetch: refetchInventory } = useQuery({
-    queryKey: ['inventory-records', selectedStore],
-    queryFn: () => {
-      const url =
-        selectedStore === 'storage'
-          ? '/api/inventory/storage/?limit=100'
-          : selectedStore && selectedStore !== 'all'
-          ? `/api/inventory/?store=${selectedStore}&limit=100`
-          : '/api/inventory/?limit=100';
-      return apiClient.get(url);
+  const createStockMutation = useMutation({
+    mutationFn: adjustInventory,
+    onSuccess: invalidateInventory,
+    onError: invalidateInventory,
+  });
+  const transferMutation = useMutation({
+    mutationFn: async ({ fromStore, toStore, lines, notes }) => {
+      let completed = 0;
+      const completedVariantIds = [];
+      try {
+        for (const line of lines) {
+          await transferInventoryItem({
+            variantId: line.variantId,
+            fromStore,
+            toStore,
+            quantity: line.quantity,
+            notes,
+          });
+          completed += 1;
+          completedVariantIds.push(line.variantId);
+        }
+      } catch (error) {
+        if (completed) {
+          const partialError = new Error(
+            `Transfer partially completed: ${completed} of ${lines.length} items moved. ${error.message}`,
+          );
+          partialError.completedVariantIds = completedVariantIds;
+          throw partialError;
+        }
+        throw error;
+      }
+      return completed;
+    },
+    onSuccess: async (count) => {
+      setNotice(`Transfer complete. ${count} item${count === 1 ? '' : 's'} moved.`);
+      await invalidateInventory();
+    },
+    onError: async (error) => {
+      setNotice(error.message);
+      await invalidateInventory();
     },
   });
 
-  const inventoryList = useMemo(() => {
-    return inventoryData?.results || (Array.isArray(inventoryData) ? inventoryData : []);
-  }, [inventoryData]);
-
-  // Find current stock on hand for selected store and variant
-  const currentInvItem = useMemo(() => {
-    if (!selectedVariantId) return null;
-    return inventoryList.find((item) => {
-      const vId = item.variant?.id || item.variant;
-      return String(vId) === String(selectedVariantId);
-    });
-  }, [inventoryList, selectedVariantId]);
-
-  const currentBalance = currentInvItem ? (currentInvItem.quantity_on_hand ?? 0) : 0;
-
-  // Calculate simulated resulting balance
-  const simulated = useMemo(() => {
-    const qty = parseInt(quantity, 10) || 0;
-    if (mode === 'add') {
-      return {
-        delta: qty,
-        resulting: currentBalance + qty,
-      };
-    }
-    if (mode === 'subtract') {
-      return {
-        delta: -qty,
-        resulting: currentBalance - qty,
-      };
-    }
-    if (mode === 'set') {
-      return {
-        delta: qty - currentBalance,
-        resulting: qty,
-      };
-    }
-    return { delta: 0, resulting: currentBalance };
-  }, [currentBalance, mode, quantity]);
-
-  const handleAdjustSubmit = async (e) => {
-    e.preventDefault();
-    setErrorMsg('');
-    setSuccessMsg('');
-
-    if (!selectedVariantId) {
-      setErrorMsg('Please select a SKU variation to adjust.');
-      return;
-    }
-
-    const qty = parseInt(quantity, 10);
-    if (isNaN(qty) || qty < 0) {
-      setErrorMsg('Quantity must be a positive integer.');
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      const payload = {
-        variant_id: selectedVariantId,
-        store: selectedStore === 'storage' ? null : selectedStore,
-        type: mode,
-        quantity: qty,
-        reason: reason,
-        notes: notes.trim(),
-      };
-
-      const res = await apiClient.post('/api/inventory/adjust/', payload);
-      setSuccessMsg(res.message || 'Inventory updated successfully.');
-
-      // Invalidate relevant queries
-      await queryClient.invalidateQueries({ queryKey: ['inventory-records'] });
-      await queryClient.invalidateQueries({ queryKey: ['ledger'] });
-      await queryClient.invalidateQueries({ queryKey: ['analytics-summary'] });
-
-      // Reset quantity and notes
-      setNotes('');
-    } catch (err) {
-      const respData = err?.response?.data;
-      if (respData) {
-        const msgs = Object.entries(respData)
-          .map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(', ') : v}`)
-          .join(' | ');
-        setErrorMsg(msgs);
-      } else {
-        setErrorMsg('Failed to adjust inventory. Please verify input.');
+  async function submitTransfer(payload) {
+    const latestInventory = normalizeInventory(
+      await getInventory(payload.fromStore),
+      variants,
+      products,
+      categories,
+      stores,
+    );
+    console.log(latestInventory,payload)
+    for (const line of payload.lines) {
+      const current = latestInventory.find((row) =>
+        row.variantId === line.id && row.storeId === payload.fromStore);
+      if (!current || line.quantity > current.quantity) {
+        const available = current?.quantity || 0;
+        throw new Error(`${line.sku}: stock changed; only ${available} units are now available.`);
       }
-    } finally {
-      setIsSubmitting(false);
     }
-  };
+    return transferMutation.mutateAsync(payload);
+  }
 
-  // Filter & sort table inventory
-  const filteredInventory = useMemo(() => {
-    let list = inventoryList.filter((item) => {
-      const q = tableSearch.toLowerCase().trim();
-      const sku = (item.variant_sku || '').toLowerCase();
-      const barcode = (item.variant_barcode || '').toLowerCase();
-      const product = (item.product_name || '').toLowerCase();
-      const storeName = (item.store_name || '').toLowerCase();
-      const size = (item.variant_size || '').toLowerCase();
-      const color = (item.variant_color || '').toLowerCase();
-
-      const matchesSearch =
-        !q ||
-        sku.includes(q) ||
-        barcode.includes(q) ||
-        product.includes(q) ||
-        storeName.includes(q) ||
-        size.includes(q) ||
-        color.includes(q);
-
-      if (!matchesSearch) return false;
-
-      const qty = item.quantity_on_hand ?? 0;
-      if (statusFilter === 'in_stock' && qty <= 5) return false;
-      if (statusFilter === 'low_stock' && (qty <= 0 || qty > 5)) return false;
-      if (statusFilter === 'out_of_stock' && qty !== 0) return false;
-      if (statusFilter === 'negative' && qty >= 0) return false;
-
-      return true;
-    });
-
-    // Sorting
-    return [...list].sort((a, b) => {
-      const qtyA = a.quantity_on_hand ?? 0;
-      const qtyB = b.quantity_on_hand ?? 0;
-      if (sortBy === 'stock_desc') return qtyB - qtyA;
-      if (sortBy === 'stock_asc') return qtyA - qtyB;
-      if (sortBy === 'sku_asc') return (a.variant_sku || '').localeCompare(b.variant_sku || '');
-      if (sortBy === 'name_asc') return (a.product_name || '').localeCompare(b.product_name || '');
-      return 0;
-    });
-  }, [inventoryList, tableSearch, statusFilter, sortBy]);
-
-  const activeFiltersCount =
-    (tableSearch.trim() ? 1 : 0) +
-    (statusFilter !== 'all' ? 1 : 0) +
-    (sortBy !== 'stock_desc' ? 1 : 0);
-
-  const resetFilters = () => {
-    setTableSearch('');
-    setStatusFilter('all');
-    setSortBy('stock_desc');
-  };
+  const relatedError = [
+    storesQuery.error,
+    variantsQuery.error,
+    productsQuery.error,
+    categoriesQuery.error,
+  ].find(Boolean);
+  const isReferenceDataLoading = storesQuery.isLoading
+    || variantsQuery.isLoading
+    || productsQuery.isLoading
+    || categoriesQuery.isLoading;
 
   return (
-    <main className="flex-1 p-3 sm:p-space-lg max-w-7xl w-full mx-auto pb-24 md:pb-12 space-y-space-md">
-      {/* Header Bar */}
-      <div className="bg-surface-container-lowest p-space-md sm:p-space-lg rounded-xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-space-md">
+    <div className="mx-auto w-full max-w-7xl space-y-4 pb-12">
+      <header className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-primary text-[20px]">warehouse</span>
-            <span className="font-label-sm text-label-sm uppercase tracking-wider text-secondary font-semibold">
-              Stock Control &amp; Balancing
-            </span>
-          </div>
-          <h1 className="font-headline-lg text-headline-sm sm:text-headline-lg text-on-surface tracking-tight mt-0.5">
-            Store Inventory &amp; Stock Adjustment
-          </h1>
-          <p className="font-body-md text-body-sm sm:text-body-md text-on-surface-variant mt-0.5 max-w-2xl">
-            Audit, restock, deduct shrinkage, or reconcile balances per location with automatic cryptographic ledger auditing.
+          <p className="font-label-sm font-semibold uppercase tracking-wider text-secondary">Stock control</p>
+          <h1 className="mt-1 font-headline-lg text-on-surface">Store inventory</h1>
+          <p className="mt-1 max-w-2xl text-sm text-on-surface-variant">
+            Review stock by location, add stock, move items between stores, or make an audited adjustment.
           </p>
         </div>
+        <Link to="/ledger" className="inline-flex h-10 items-center justify-center gap-2 self-start rounded-lg border border-outline-variant/50 px-4 text-sm font-semibold text-on-surface hover:bg-surface-container focus-visible:outline focus-visible:outline-2 focus-visible:outline-secondary sm:self-auto">
+          <span className="material-symbols-outlined text-[18px]" aria-hidden="true">receipt_long</span>
+          View stock ledger
+        </Link>
+      </header>
 
-        <div className="flex items-center gap-2 flex-wrap shrink-0">
-          <Link
-            to="/ledger"
-            className="h-10 px-4 bg-surface-container hover:bg-surface-container-high rounded-lg text-on-surface font-body-md text-body-md font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
-          >
-            <span className="material-symbols-outlined text-[18px]">receipt_long</span>
-            <span>View Ledger Trail</span>
-          </Link>
+      {relatedError && (
+        <div role="alert" className="rounded-lg bg-error-container p-3 text-sm text-on-error-container">
+          Supporting store/catalog data could not be loaded: {relatedError.message}
         </div>
+      )}
+      {notice && (
+        <div role="status" className="rounded-lg bg-surface-container p-3 text-sm font-medium text-on-surface">
+          {notice}
+        </div>
+      )}
+
+      <div className="flex flex-wrap gap-2" role="group" aria-label="Inventory actions">
+        <button type="button" aria-pressed={workflow === 'create'} onClick={() => { setWorkflow('create'); setNotice(''); }} className={`h-10 rounded-lg px-4 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-secondary ${workflow === 'create' ? 'bg-primary text-on-primary' : 'border border-outline-variant/50 bg-surface-container-lowest text-on-surface hover:bg-surface-container'}`}>
+          Create Stock
+        </button>
+        <button type="button" aria-pressed={workflow === 'transfer'} onClick={() => { setWorkflow('transfer'); setNotice(''); }} className={`h-10 rounded-lg px-4 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-secondary ${workflow === 'transfer' ? 'bg-primary text-on-primary' : 'border border-outline-variant/50 bg-surface-container-lowest text-on-surface hover:bg-surface-container'}`}>
+          Transfer stock
+        </button>
+        <button type="button" aria-pressed={workflow === 'adjust'} onClick={() => { setWorkflow('adjust'); setNotice(''); }} className={`h-10 rounded-lg px-4 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-secondary ${workflow === 'adjust' ? 'bg-primary text-on-primary' : 'border border-outline-variant/50 bg-surface-container-lowest text-on-surface hover:bg-surface-container'}`}>
+          Quick adjustment
+        </button>
       </div>
 
-      {/* Main Grid: Adjustment Form (Left) & Live Inventory (Right) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-md">
-        {/* Adjustment Action Form */}
-        <div className="lg:col-span-5 bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/30 p-space-md sm:p-space-lg flex flex-col justify-between">
-          <form onSubmit={handleAdjustSubmit} className="space-y-space-md">
-            <div className="flex items-center justify-between border-b border-outline-variant/20 pb-2">
-              <h2 className="font-headline-sm text-body-lg text-on-surface font-semibold flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary text-[20px]">tune</span>
-                <span>Adjust Stock Level</span>
-              </h2>
-              <span className="font-label-sm text-[10px] font-mono bg-primary text-on-primary px-2 py-0.5 rounded font-bold">
-                LEDGER ATOMIC
-              </span>
-            </div>
+      {workflow === 'create' ? (
+        <CreateStockPanel
+          stores={stores}
+          variants={variants}
+          inventory={createStockInventoryQuery.data || EMPTY_LIST}
+          storeId={createStockStore}
+          onStoreChange={setCreateStockStore}
+          isLoading={isReferenceDataLoading || createStockInventoryQuery.isLoading}
+          error={variantsQuery.error?.message || createStockInventoryQuery.error?.message}
+          busy={createStockMutation.isPending}
+          busyVariantId={createStockMutation.variables?.variantId}
+          onSubmit={(payload) => createStockMutation.mutateAsync(payload)}
+        />
+      ) : workflow === 'transfer' ? (
+        <TransferPanel
+          stores={stores}
+          sourceInventory={sourceRows}
+          variants={variants}
+          sourceStore={transferSource}
+          onSourceStoreChange={setTransferSource}
+          isLoading={isReferenceDataLoading || transferInventoryQuery.isLoading}
+          sourceError={transferInventoryQuery.error?.message}
+          busy={transferMutation.isPending}
+          onSubmit={submitTransfer}
+        />
+      ) : (
+        <QuickAdjustmentPanel
+          key={selectedItem?.id || preselectedItem?.id || 'no-selection'}
+          stores={stores}
+          selectedItem={selectedItem || preselectedItem}
+          busy={adjustmentMutation.isPending}
+          onSubmit={(payload) => adjustmentMutation.mutateAsync(payload)}
+        />
+      )}
 
-            {errorMsg && (
-              <div className="bg-error-container text-on-error-container rounded-lg p-3 font-body-sm text-body-sm flex items-start gap-2">
-                <span className="material-symbols-outlined text-[16px] mt-0.5 shrink-0">error</span>
-                <span>{errorMsg}</span>
-              </div>
-            )}
-
-            {successMsg && (
-              <div className="bg-[#ecfdf5] text-[#047857] rounded-lg p-3 font-body-sm text-body-sm flex items-start gap-2 border border-[#10b981]/20">
-                <span className="material-symbols-outlined text-[16px] mt-0.5 shrink-0">check_circle</span>
-                <span>{successMsg}</span>
-              </div>
-            )}
-
-            {/* Target Store Location */}
-            <div>
-              <label className="font-label-sm text-label-sm text-on-surface uppercase tracking-wider font-semibold block mb-1">
-                Target Store Location <span className="text-error">*</span>
-              </label>
-              <select
-                value={selectedStore}
-                onChange={(e) => setSelectedStore(e.target.value)}
-                className="w-full h-10 px-3 bg-surface-container-low rounded-lg font-body-md text-body-md text-on-surface focus:outline-none focus:bg-surface-container-lowest focus:ring-1 focus:ring-secondary shadow-sm cursor-pointer"
-              >
-                {stores.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    🏪 {s.name} ({s.code}) {s.is_warehouse ? '[Warehouse]' : ''}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* SKU Variant Selector */}
-            <div>
-              <label className="font-label-sm text-label-sm text-on-surface uppercase tracking-wider font-semibold block mb-1">
-                Select SKU / Variant <span className="text-error">*</span>
-              </label>
-              <select
-                required
-                value={selectedVariantId}
-                onChange={(e) => setSelectedVariantId(e.target.value)}
-                className="w-full h-10 px-3 bg-surface-container-low rounded-lg font-body-md text-body-md text-on-surface font-mono focus:outline-none focus:bg-surface-container-lowest focus:ring-1 focus:ring-secondary shadow-sm cursor-pointer"
-              >
-                <option value="">-- Choose SKU Variant ({variants.length} Available) --</option>
-                {variants.map((v) => (
-                  <option key={v.id} value={v.id}>
-                    {v.sku} - {v.product_name} ({v.size} / {v.color})
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Operation Mode Selector */}
-            <div>
-              <label className="font-label-sm text-label-sm text-on-surface uppercase tracking-wider font-semibold block mb-1.5">
-                Adjustment Action Mode
-              </label>
-              <div className="grid grid-cols-3 gap-2">
-                <button
-                  type="button"
-                  onClick={() => setMode('add')}
-                  className={`py-2 px-1 rounded-lg border text-center transition-all cursor-pointer ${
-                    mode === 'add'
-                      ? 'border-[#047857] bg-[#ecfdf5] text-[#047857] font-bold shadow-sm'
-                      : 'border-outline-variant/30 bg-surface-container-low text-on-surface hover:bg-surface-container'
-                  }`}
-                >
-                  <span className="material-symbols-outlined text-[18px] block mx-auto">add_circle</span>
-                  <span className="font-label-sm text-[11px] block mt-0.5">Add (+)</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setMode('subtract')}
-                  className={`py-2 px-1 rounded-lg border text-center transition-all cursor-pointer ${
-                    mode === 'subtract'
-                      ? 'border-error bg-error-container text-on-error-container font-bold shadow-sm'
-                      : 'border-outline-variant/30 bg-surface-container-low text-on-surface hover:bg-surface-container'
-                  }`}
-                >
-                  <span className="material-symbols-outlined text-[18px] block mx-auto">remove_circle</span>
-                  <span className="font-label-sm text-[11px] block mt-0.5">Subtract (-)</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setMode('set')}
-                  className={`py-2 px-1 rounded-lg border text-center transition-all cursor-pointer ${
-                    mode === 'set'
-                      ? 'border-primary bg-primary/10 text-primary font-bold shadow-sm'
-                      : 'border-outline-variant/30 bg-surface-container-low text-on-surface hover:bg-surface-container'
-                  }`}
-                >
-                  <span className="material-symbols-outlined text-[18px] block mx-auto">equal</span>
-                  <span className="font-label-sm text-[11px] block mt-0.5">Set Count (=)</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Quantity Input with Quick Chips */}
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="font-label-sm text-label-sm text-on-surface uppercase tracking-wider font-semibold">
-                  {mode === 'set' ? 'New Target Stock Count' : 'Units Count'}
-                </label>
-                <div className="flex items-center gap-1">
-                  {[1, 5, 10, 50].map((step) => (
-                    <button
-                      key={step}
-                      type="button"
-                      onClick={() => setQuantity((prev) => (mode === 'set' ? step : (parseInt(prev, 10) || 0) + step))}
-                      className="px-1.5 py-0.5 bg-surface-container hover:bg-surface-container-high rounded text-[10px] font-mono text-on-surface cursor-pointer"
-                    >
-                      +{step}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <input
-                type="number"
-                min="0"
-                required
-                value={quantity}
-                onChange={(e) => setQuantity(e.target.value)}
-                className="w-full h-11 px-3 bg-surface-container-low rounded-lg font-headline-sm text-headline-sm text-on-surface font-mono font-bold focus:outline-none focus:bg-surface-container-lowest focus:ring-1 focus:ring-secondary shadow-sm"
-              />
-            </div>
-
-            {/* Reason */}
-            <div>
-              <label className="font-label-sm text-label-sm text-on-surface uppercase tracking-wider font-semibold block mb-1">
-                Transaction Reason
-              </label>
-              <select
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                className="w-full h-10 px-3 bg-surface-container-low rounded-lg font-body-md text-body-md text-on-surface focus:outline-none focus:bg-surface-container-lowest focus:ring-1 focus:ring-secondary shadow-sm cursor-pointer"
-              >
-                {REASON_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Notes */}
-            <div>
-              <label className="font-label-sm text-label-sm text-on-surface uppercase tracking-wider font-semibold block mb-1">
-                Audit Notes / Ticket Reference
-              </label>
-              <input
-                type="text"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="e.g. Inbound shipment PO-9912, Damaged during transit"
-                className="w-full h-10 px-3 bg-surface-container-low rounded-lg font-body-md text-body-md text-on-surface focus:outline-none focus:bg-surface-container-lowest focus:ring-1 focus:ring-secondary shadow-sm"
-              />
-            </div>
-
-            {/* Live Simulation Card */}
-            <div className="bg-surface-container-low p-3.5 rounded-xl border border-outline-variant/30 space-y-2">
-              <span className="font-label-sm text-[10px] text-outline font-mono uppercase tracking-wider block">
-                Real-Time Simulation
-              </span>
-              <div className="grid grid-cols-3 gap-2 text-center">
-                <div className="flex flex-col">
-                  <span className="font-label-sm text-[10px] text-on-surface-variant">Current Stock</span>
-                  <span className="font-mono font-bold text-on-surface text-[16px]">{currentBalance} pcs</span>
-                </div>
-                <div className="flex flex-col border-x border-outline-variant/30">
-                  <span className="font-label-sm text-[10px] text-on-surface-variant">Delta</span>
-                  <span
-                    className={`font-mono font-bold text-[16px] ${
-                      simulated.delta > 0 ? 'text-[#047857]' : simulated.delta < 0 ? 'text-error' : 'text-on-surface'
-                    }`}
-                  >
-                    {simulated.delta > 0 ? `+${simulated.delta}` : simulated.delta}
-                  </span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="font-label-sm text-[10px] text-on-surface-variant">Projected</span>
-                  <span
-                    className={`font-mono font-bold text-[16px] ${
-                      simulated.resulting < 0 ? 'text-error animate-pulse' : 'text-primary'
-                    }`}
-                  >
-                    {simulated.resulting} pcs
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full h-11 bg-primary hover:bg-primary-container text-on-primary font-body-md font-semibold rounded-lg shadow-md transition-all active:scale-95 disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer mt-2"
-            >
-              <span className="material-symbols-outlined text-[18px]">publish</span>
-              <span>{isSubmitting ? 'Recording Mutation…' : 'Apply Stock Adjustment'}</span>
-            </button>
-          </form>
-        </div>
-
-        {/* Live Inventory Overview Table */}
-        <div className="lg:col-span-7 bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/30 overflow-hidden flex flex-col">
-          {/* Header */}
-          <div className="p-space-md border-b border-outline-variant/20 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="font-headline-sm text-body-lg text-on-surface font-semibold">
-                  Current Inventory Balance
-                </h2>
-                <span className="font-mono text-[11px] px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-medium">
-                  {filteredInventory.length} of {inventoryList.length} SKUs
-                </span>
-              </div>
-              <span className="font-label-sm text-[11px] text-on-surface-variant">
-                Location:{' '}
-                <span className="font-mono font-bold text-primary">
-                  {selectedStore === 'storage'
-                    ? 'Central Storage'
-                    : stores.find((s) => String(s.id) === String(selectedStore))?.name || 'Selected Store'}
-                </span>
-              </span>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => refetchInventory()}
-                className="h-9 px-2.5 bg-surface-container hover:bg-surface-container-high rounded-lg text-on-surface flex items-center gap-1.5 transition-colors cursor-pointer text-body-sm font-medium"
-                title="Refresh inventory"
-              >
-                <span className="material-symbols-outlined text-[16px]">refresh</span>
-                <span className="hidden sm:inline">Refresh</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Filter Toolbar */}
-          <div className="p-space-sm bg-surface-container-low/50 border-b border-outline-variant/20 flex flex-wrap items-center gap-2">
-            <div className="relative flex-1 min-w-[160px]">
-              <span className="material-symbols-outlined text-outline text-[16px] absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none">
-                search
-              </span>
-              <input
-                type="text"
-                value={tableSearch}
-                onChange={(e) => setTableSearch(e.target.value)}
-                placeholder="Search SKU, product, size, color..."
-                className="w-full h-8 pl-8 pr-7 bg-surface-container-lowest rounded-lg font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-1 focus:ring-secondary"
-              />
-              {tableSearch && (
-                <button
-                  type="button"
-                  onClick={() => setTableSearch('')}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface cursor-pointer text-xs"
-                >
-                  ✕
-                </button>
-              )}
-            </div>
-
-            {/* Stock status filter */}
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="h-8 px-2.5 bg-surface-container-lowest rounded-lg font-body-sm text-[12px] text-on-surface focus:outline-none focus:ring-1 focus:ring-secondary cursor-pointer shrink-0"
-            >
-              <option value="all">All Quantities</option>
-              <option value="in_stock">In Stock (&gt; 5)</option>
-              <option value="low_stock">Low Stock (1–5)</option>
-              <option value="out_of_stock">Out of Stock (0)</option>
-              <option value="negative">Negative Discrepancies (&lt; 0)</option>
-            </select>
-
-            {/* Sort order */}
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="h-8 px-2.5 bg-surface-container-lowest rounded-lg font-body-sm text-[12px] text-on-surface focus:outline-none focus:ring-1 focus:ring-secondary cursor-pointer shrink-0"
-            >
-              <option value="stock_desc">Stock: High to Low</option>
-              <option value="stock_asc">Stock: Low to High</option>
-              <option value="sku_asc">SKU (A–Z)</option>
-              <option value="name_asc">Product Name (A–Z)</option>
-            </select>
-
-            {activeFiltersCount > 0 && (
-              <button
-                type="button"
-                onClick={resetFilters}
-                className="h-8 px-2 text-error hover:bg-error-container/30 rounded font-label-sm text-[11px] font-semibold cursor-pointer transition-colors shrink-0"
-              >
-                Reset
-              </button>
-            )}
-          </div>
-
-          {/* Active Filter Chips Ribbon */}
-          {activeFiltersCount > 0 && (
-            <div className="px-space-sm py-1.5 bg-surface-container-low/30 border-b border-outline-variant/15 flex flex-wrap items-center gap-1.5 text-label-sm text-[11px]">
-              <span className="text-outline font-medium">Active filters:</span>
-              {tableSearch && (
-                <span className="inline-flex items-center gap-1 bg-surface-container px-2 py-0.5 rounded-full text-on-surface">
-                  Query: "{tableSearch}"
-                  <button onClick={() => setTableSearch('')} className="hover:text-error cursor-pointer">✕</button>
-                </span>
-              )}
-              {statusFilter !== 'all' && (
-                <span className="inline-flex items-center gap-1 bg-secondary-fixed/50 text-on-secondary-fixed px-2 py-0.5 rounded-full">
-                  Status: {statusFilter.replace('_', ' ')}
-                  <button onClick={() => setStatusFilter('all')} className="hover:text-error cursor-pointer">✕</button>
-                </span>
-              )}
-              {sortBy !== 'stock_desc' && (
-                <span className="inline-flex items-center gap-1 bg-surface-container px-2 py-0.5 rounded-full text-on-surface">
-                  Sorted
-                  <button onClick={() => setSortBy('stock_desc')} className="hover:text-error cursor-pointer">✕</button>
-                </span>
-              )}
-            </div>
-          )}
-
-          {/* Table */}
-          <div className="overflow-x-auto flex-1">
-            <table className="w-full text-left border-collapse">
-              <thead className="bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider border-b border-outline-variant/20">
-                <tr>
-                  <th className="py-2.5 px-3 font-semibold">SKU / Product</th>
-                  <th className="py-2.5 px-3 font-semibold">Size / Color</th>
-                  <th className="py-2.5 px-3 font-semibold text-right">On Hand</th>
-                  <th className="py-2.5 px-3 font-semibold text-center">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-surface-container-low font-body-md text-body-md text-on-surface">
-                {filteredInventory.map((item) => {
-                  const qty = item.quantity_on_hand ?? 0;
-                  const isNeg = qty < 0;
-                  const isLow = qty >= 0 && qty <= 5;
-                  const vId = item.variant?.id || item.variant;
-
-                  return (
-                    <tr
-                      key={item.id}
-                      className={`hover:bg-surface-container-low/50 transition-colors ${
-                        String(vId) === String(selectedVariantId) ? 'bg-primary/5' : ''
-                      }`}
-                    >
-                      <td className="py-3 px-3">
-                        <div className="flex flex-col min-w-0">
-                          <span className="font-mono font-semibold text-[13px]">{item.variant_sku}</span>
-                          <span className="font-body-sm text-[11px] text-on-surface-variant truncate">
-                            {item.product_name || '—'}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="py-3 px-3 font-mono text-[12px]">
-                        {item.variant_size || '—'} / {item.variant_color || '—'}
-                      </td>
-                      <td className="py-3 px-3 text-right">
-                        <span
-                          className={`font-mono font-bold text-[15px] ${
-                            isNeg ? 'text-error' : isLow ? 'text-amber-600' : 'text-[#047857]'
-                          }`}
-                        >
-                          {qty}
-                        </span>
-                      </td>
-                      <td className="py-3 px-3 text-center">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (vId) setSelectedVariantId(vId);
-                          }}
-                          className="px-2 py-1 bg-surface-container hover:bg-primary hover:text-on-primary rounded font-label-sm text-[11px] font-mono transition-colors cursor-pointer"
-                        >
-                          Pick
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-
-                {!loadingInventory && filteredInventory.length === 0 && (
-                  <tr>
-                    <td colSpan={4} className="py-16 text-center text-on-surface-variant font-body-md">
-                      <span className="material-symbols-outlined text-[40px] block mb-2 opacity-40">inventory_2</span>
-                      {activeFiltersCount > 0 ? (
-                        <div className="space-y-2">
-                          <p>No inventory records match the selected filters.</p>
-                          <button
-                            type="button"
-                            onClick={resetFilters}
-                            className="px-3 py-1 bg-surface-container hover:bg-surface-container-high rounded text-primary text-xs font-semibold cursor-pointer"
-                          >
-                            Clear All Filters
-                          </button>
-                        </div>
-                      ) : (
-                        <p>No inventory records found for this location.</p>
-                      )}
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </main>
+      <InventoryOverview
+        rows={visibleRows}
+        stores={stores}
+        categories={categories}
+        storeId={storeId}
+        categoryId={categoryId}
+        search={search}
+        sortBy={sortBy}
+        statusFilter={statusFilter}
+        isLoading={inventoryQuery.isLoading || isReferenceDataLoading}
+        error={inventoryQuery.error?.message}
+        onStoreChange={(value) => {
+          setStoreId(value);
+          setInventoryPage(1);
+          setSelectedItem(null);
+        }}
+        pagination={pagination}
+        onPageChange={setInventoryPage}
+        onCategoryChange={(value) => {
+          setCategoryId(value);
+          setInventoryPage(1);
+        }}
+        onSearchChange={(value) => {
+          setSearch(value);
+          setInventoryPage(1);
+        }}
+        onSortChange={(value) => {
+          setSortBy(value);
+          setInventoryPage(1);
+        }}
+        onStatusChange={(value) => {
+          setStatusFilter(value);
+          setInventoryPage(1);
+        }}
+        onRefresh={() => {
+          inventoryQuery.refetch();
+          if (workflow === 'transfer') transferInventoryQuery.refetch();
+          if (workflow === 'create') createStockInventoryQuery.refetch();
+        }}
+        onAdjust={(row) => {
+          setSelectedItem(row);
+          setWorkflow('adjust');
+        }}
+        selectedRowId={adjustedRowId}
+      />
+    </div>
   );
 }

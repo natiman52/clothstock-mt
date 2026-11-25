@@ -13,6 +13,9 @@ from .views import (
     SaleItemViewSet,
     SyncPullView,
     SyncPushView,
+    SyncRegisterView,
+    SyncStateView,
+    ServerEventExportView,
     SyncBundleView,
     AnalyticsSummaryView,
 )
@@ -38,6 +41,9 @@ urlpatterns = [
     path('sync/pull/',   SyncPullView.as_view(),   name='sync-pull'),
     path('sync/push/',   SyncPushView.as_view(),   name='sync-push'),
     path('sync/bundle/', SyncBundleView.as_view(), name='sync-bundle'),
+    path('sync/register/', SyncRegisterView.as_view(), name='sync-register'),
+    path('sync/state/', SyncStateView.as_view(), name='sync-state'),
+    path('sync/events/export/', ServerEventExportView.as_view(), name='sync-events-export'),
     # ViewSet routes
     path('', include(router.urls)),
 ]

@@ -1,2 +1,11 @@
 unless login save auth is checked store it in session and delete it in 24 hour
 why does saleItem require ledgerEvent
+
+## current session
+1) make creating product-> varition -> inventory stock easy be creating an api and page where a person can create or chooses ap roduct plus create or choose a variant plus finally create or choose an availble inventory stock to edit 
+2) in the same session i need you to edit store inventory so it has a pagination that prevents any more than 5 stock from showing
+3) variants should have images
+4) transfer stocks is not working (manual fix)
+5) there is no import json in the app
+6) login should be through store id or code
+7) sync in app seems to not get true quantities for variants

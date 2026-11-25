@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0",
+  "file_type": "clothstock.server-event-export",
+  "generated_at": "2026-11-23T20:30:00Z",
+  "store_id": null,
+  "after_seq": 41,
+  "latest_seq": 42,
+  "count": 1,
+  "events": [
+    {
+      "seq_id": 42,
+      "store_id": 12,
+      "event_type": "VARIANT_UPDATED",
+      "payload": {
+        "id": "09f620a8-2584-48b0-8aa1-258f25a85db8",
+        "price": "19.99"
+      },
+      "created_at": "2026-11-23T20:27:00Z"
+    }
+  ]
+}

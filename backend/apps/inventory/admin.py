@@ -9,7 +9,8 @@ from .models import (
     StockLedgerEntry,
     Category,
     Sale,
-    SaleItem
+    SaleItem,
+    StoreSyncState
 )
 
 
@@ -18,7 +19,9 @@ class VariantInline(admin.TabularInline):
     extra = 1
     fields = ('sku', 'barcode', 'size', 'color', 'price', 'cost', 'is_active')
 
-
+@admin.register(StoreSyncState)
+class SyncStateAdmin(admin.ModelAdmin):
+        list_display = ("store",)
 @admin.register(Store)
 class StoreAdmin(admin.ModelAdmin):
     list_display = ('name', 'code', 'phone', 'is_active', 'created_at')
